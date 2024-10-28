@@ -1,0 +1,14 @@
+{
+    "name": "yag-jukebox",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "runArgs": [
+        "--name=yag-jukebox",
+        "--network=host"
+    ],
+    "postCreateCommand": ".devcontainer/post-create.sh",    
+    "mounts": [
+        "source=${env:HOME}${env:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind"
+    ]
+}
