@@ -1,4 +1,0 @@
-{
-    "window.title": "${dirty}yag${separator}${rootName}",
-    "terminal.integrated.scrollback": 50000
-}
