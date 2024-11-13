@@ -33,9 +33,8 @@ RUN ./build_gpu_intel_deps.sh ${WINDOW_SYSTEM}
 COPY wayland/files/build_wayland_deps.sh .
 RUN ./build_wayland_deps.sh
 
-COPY "deps/streamd/$WINDOW_SYSTEM" streamd
-COPY files/build_streamd.sh .
-RUN ./build_streamd.sh ${WINDOW_SYSTEM} ${VIDEO_ENC}
+RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
+RUN cd streamd && ./build.sh ${WINDOW_SYSTEM} ${VIDEO_ENC} ${BUILD_DIR}
 
 # runner
 FROM ${RUNNER_BASE_IMAGE} AS runner
