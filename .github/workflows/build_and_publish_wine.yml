@@ -59,7 +59,6 @@ jobs:
             WINE_BRANCH=${{ env.RUNNER_BRANCH }}
             WINE_VER=${{ env.RUNNER_VER }}
           context: ./runners/${{ env.RUNNER }}
-          file: ./runners/${{ env.RUNNER }}/${{ matrix.window_system }}/${{ matrix.video_enc }}/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
