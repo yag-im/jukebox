@@ -27,11 +27,16 @@ RUN apt-get update \
 
 WORKDIR $SRC_DIR
 
+COPY files/patches ./patches
+
 COPY files/build_gpu_intel_deps.sh .
 RUN ./build_gpu_intel_deps.sh ${WINDOW_SYSTEM}
 
 COPY wayland/files/build_wayland_deps.sh .
 RUN ./build_wayland_deps.sh
+
+COPY files/build_gstreamer.sh .
+RUN ./build_gstreamer.sh ${BUILD_DIR}
 
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
 RUN cd streamd && ./build.sh ${WINDOW_SYSTEM} ${VIDEO_ENC} ${BUILD_DIR}
@@ -95,14 +100,6 @@ RUN mkdir -p /usr/share/xdg-desktop-portal-wlr
 COPY wayland/files/xdg-desktop-portal-wlr.conf /usr/share/xdg-desktop-portal-wlr/config
 
 RUN chown -R $USERNAME:$USERNAME /home/$USERNAME
-
-COPY deps/gstreamer/subprojects/packages/bin /bin
-COPY deps/gstreamer/subprojects/packages/include /include
-COPY deps/gstreamer/subprojects/packages/lib /lib
-COPY deps/gstreamer/subprojects/packages/share /share
-COPY deps/gstreamer/subprojects/packages/libexec /usr/libexec
-RUN ln -s /usr/libexec /libexec
-RUN ldconfig
 
 # tmp dropme
 # warning: firefox depends on intel-media-va-driver which replaces iHD driver and crashes the pipeline

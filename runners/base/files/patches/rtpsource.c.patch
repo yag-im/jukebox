@@ -1,0 +1,11 @@
+--- rtpsource.c.orig	2024-11-12 21:17:12.638643628 -0800
++++ rtpsource.c.patched	2024-11-12 21:18:33.632177078 -0800
+@@ -1615,7 +1615,7 @@
+    * running_time vs ntptime curve is close to 1, which is certainly
+    * sufficient for the frequency at which we report SR and the rate we send
+    * out RTP packets. */
+-  t_rtp = src->last_rtptime;
++  t_rtp = 1307;
+ 
+   GST_DEBUG ("last_rtime %" GST_TIME_FORMAT ", last_rtptime %"
+       G_GUINT64_FORMAT, GST_TIME_ARGS (src->last_rtime), t_rtp);

@@ -35,8 +35,13 @@ RUN apt-get update \
 
 WORKDIR $SRC_DIR
 
+COPY files/patches ./patches
+
 COPY files/build_gpu_intel_deps.sh .
 RUN ./build_gpu_intel_deps.sh ${WINDOW_SYSTEM}
+
+COPY files/build_gstreamer.sh .
+RUN ./build_gstreamer.sh ${BUILD_DIR}
 
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
 RUN cd streamd && ./build.sh ${WINDOW_SYSTEM} ${VIDEO_ENC} ${BUILD_DIR}
@@ -97,14 +102,6 @@ COPY x11/files/default.pa /etc/pulse/default.pa
 COPY x11/files/xorg.conf /home/$USERNAME/xorg.conf
 COPY x11/files/openbox.xml /home/$USERNAME/openbox.xml
 COPY x11/files/daemon.conf /etc/pulse/daemon.conf
-
-COPY deps/gstreamer/subprojects/packages/bin /bin
-COPY deps/gstreamer/subprojects/packages/include /include
-COPY deps/gstreamer/subprojects/packages/lib /lib
-COPY deps/gstreamer/subprojects/packages/share /share
-COPY deps/gstreamer/subprojects/packages/libexec /usr/libexec
-RUN ln -s /usr/libexec /libexec
-RUN ldconfig
 
 COPY files/init.sh /etc/init.d/init.sh
 
