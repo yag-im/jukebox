@@ -75,7 +75,7 @@ jobs:
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
-          context: ./jukebox/runners/base/${{ matrix.window_system }}/${{ matrix.video_enc }}
+          context: ./runners/base/${{ matrix.window_system }}/${{ matrix.video_enc }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
