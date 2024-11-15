@@ -1,0 +1,100 @@
+name: Create and publish a Docker image (wine)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - runners/wine/**
+      - .github/workflows/build_and_publish_wine.yml
+
+env:
+  DEBIAN_VER: bookworm
+  REGISTRY: ghcr.io
+  REPO_NAME: ${{ github.repository }}
+  RUNNER: wine
+  RUNNER_BRANCH: stable
+  RUNNER_VER: "9.0"
+
+jobs:
+  create_tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      - name: Write new version to file
+        run: echo "${{ steps.tag_version.outputs.new_version }}" > new_version.txt
+      - name: Upload new version artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: new-version
+          path: new_version.txt
+
+  build-and-push-images:
+    runs-on: ubuntu-latest
+    needs: create_tag
+    strategy:
+      fail-fast: false
+      matrix:
+        window_system:
+          - x11
+        video_enc:
+          - gpu-intel
+          - cpu
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download new tag version artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: new-version
+      - name: Read new version
+        id: tag_version
+        run: |
+          NEW_VERSION=$(cat new_version.txt)
+          echo "::set-output name=new_version::$NEW_VERSION"
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_ACCESS_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}_${{ env.RUNNER_VER }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.tag_version.outputs.new_version }}
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          build-args: |
+            DEBIAN_VER=${{ env.DEBIAN_VER }}
+            BUILDER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
+            RUNNER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
+            WINE_BRANCH=${{ env.RUNNER_BRANCH }}
+            WINE_VER=${{ env.RUNNER_VER }}
+          context: ./runners/${{ env.RUNNER }}
+          file: ./runners/${{ env.RUNNER }}/${{ matrix.window_system }}/${{ matrix.video_enc }}/Dockerfile
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME}}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}_${{ env.RUNNER_VER }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
