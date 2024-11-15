@@ -82,8 +82,8 @@ jobs:
             BUILDER_BASE_IMAGE=${{ env.GENESIS_IMAGE }}
             RUNNER_BASE_IMAGE=${{ env.GENESIS_IMAGE }}
             USERNAME=${{ env.USERNAME }}
-            VIDEO_ENC=${{ env.VIDEO_ENC }}
-            WINDOW_SYSTEM=${{ env.WINDOW_SYSTEM }}
+            VIDEO_ENC=${{ matrix.video_enc }}
+            WINDOW_SYSTEM=${{ matrix.window_system }}
           context: ./runners/base
           file: ./runners/base/${{ matrix.window_system }}/${{ matrix.video_enc }}/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
