@@ -11,7 +11,7 @@ ARG PACKAGES_DIR
 ARG SRC_DIR=/tmp/src
 
 ARG NUM_BUILD_WORKERS=8
-ARG WINE_VER
+ARG RUNNER_VER
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -28,7 +28,7 @@ RUN apt-get update \
 
 WORKDIR ${SRC_DIR}
 
-RUN git clone --depth 1 --single-branch --branch wine-${WINE_VER} https://github.com/wine-mirror/wine.git
+RUN git clone --depth 1 --single-branch --branch wine-${RUNNER_VER} https://github.com/wine-mirror/wine.git
 # honor drive type reported by mounts manager (configured through the wincfg) 
 # otherwise GetDriveTypeW() returns DRIVE_REMOTE for NFS mounted directories while we want them as DRIVE_CDROM
 COPY patches/*.patch .
@@ -121,7 +121,7 @@ FROM ${RUNNER_BASE_IMAGE} AS runner
 
 ARG PACKAGES_DIR
 ARG DEBIAN_VER
-ARG WINE_BRANCH
+ARG RUNNER_BRANCH
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -142,8 +142,8 @@ RUN dpkg --add-architecture i386 \
     && apt-get install --install-recommends -y \
         gstreamer1.0-plugins-good:i386 \
         gstreamer1.0-libav:i386 \
-        wine-${WINE_BRANCH} \
-        winehq-${WINE_BRANCH} \
+        wine-${RUNNER_BRANCH} \
+        winehq-${RUNNER_BRANCH} \
     && rm -rf /var/lib/apt/lists/*
 
 # install wine32 (should go first) and wine64

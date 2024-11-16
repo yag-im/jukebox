@@ -1,18 +1,18 @@
-name: Create and publish a Docker image (scummvm)
+name: Create and publish a Docker image (dosbox-staging)
 
 on:
   push:
     branches:
       - main
     paths:
-      - runners/scummvm/**
-      - .github/workflows/build_and_publish_scummvm.yml
+      - runners/dosbox-staging/**
+      - .github/workflows/build_and_publish_dosbox_staging.yml
 
 env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
-  RUNNER: scummvm
-  RUNNER_VER: "2.8.1"
+  RUNNER: dosbox-staging
+  RUNNER_VER: "0.81.1"
 
 jobs:
   build-and-push-images:

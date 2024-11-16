@@ -44,7 +44,7 @@ build-dosbox-staging: ## Build dosbox-staging jukebox image
 		--progress plain \
 		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg DOSBOX_STAGING_VER=$(DOSBOX_STAGING_VER) \
+		--build-arg RUNNER_VER=$(DOSBOX_STAGING_VER) \
 		-f runners/dosbox-staging/Dockerfile \
 		runners/dosbox-staging \
 	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_STAGING_IMAGE)
@@ -57,7 +57,7 @@ build-dosbox-x: ## Build dosbox-x jukebox image
 		--progress plain \
 		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg DOSBOX_X_VER=$(DOSBOX_X_VER) \
+		--build-arg RUNNER_VER=$(DOSBOX_X_VER) \
 		-f runners/dosbox-x/Dockerfile \
 		runners/dosbox-x \
 	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_X_IMAGE)
@@ -69,7 +69,7 @@ build-dosbox: ## Build dosbox jukebox image
 		-t $(DOCKER_DOSBOX_IMAGE) \
 		--progress plain \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg DOSBOX_VER=$(DOSBOX_VER) \
+		--build-arg RUNNER_VER=$(DOSBOX_VER) \
 		-f runners/dosbox/Dockerfile \
 		runners/dosbox \
 	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_IMAGE)
@@ -82,7 +82,7 @@ build-scummvm: ## Build scummvm jukebox image
 		--progress plain \
 		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg SCUMMVM_VER=$(SCUMMVM_VER) \
+		--build-arg RUNNER_VER=$(RUNNER_VER) \
 		-f runners/scummvm/Dockerfile \
 		runners/scummvm \
 	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_SCUMMVM_IMAGE)
@@ -96,8 +96,8 @@ build-wine: ## Build wine jukebox image
 		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
 		--build-arg DEBIAN_VER=$(DEBIAN_VER) \
-		--build-arg WINE_BRANCH=$(WINE_BRANCH) \
-		--build-arg WINE_VER=$(WINE_VER) \
+		--build-arg RUNNER_BRANCH=$(WINE_BRANCH) \
+		--build-arg RUNNER_VER=$(WINE_VER) \
 		-f runners/wine/Dockerfile \
 		runners/wine \
 	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_WINE_IMAGE)

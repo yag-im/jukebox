@@ -8,7 +8,7 @@ FROM ${BUILDER_BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
 ARG NUM_BUILD_WORKERS=8
-ARG SCUMMVM_VER
+ARG RUNNER_VER
 ARG SRC_DIR=/tmp/src
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -27,7 +27,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${SRC_DIR}
 
-RUN git clone --depth 1 --single-branch --branch v${SCUMMVM_VER} https://github.com/scummvm/scummvm.git
+RUN git clone --depth 1 --single-branch --branch v${RUNNER_VER} https://github.com/scummvm/scummvm.git
 RUN cd ./scummvm \
     && ./configure --enable-all-engines \
     && make -j${NUM_BUILD_WORKERS} \

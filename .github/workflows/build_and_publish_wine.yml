@@ -56,8 +56,8 @@ jobs:
             DEBIAN_VER=${{ env.DEBIAN_VER }}
             BUILDER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
             RUNNER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
-            WINE_BRANCH=${{ env.RUNNER_BRANCH }}
-            WINE_VER=${{ env.RUNNER_VER }}
+            RUNNER_BRANCH=${{ env.RUNNER_BRANCH }}
+            RUNNER_VER=${{ env.RUNNER_VER }}
           context: ./runners/${{ env.RUNNER }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true

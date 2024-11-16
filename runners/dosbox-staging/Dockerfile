@@ -9,7 +9,7 @@ FROM ${BUILDER_BASE_IMAGE} AS builder
 ARG BUILD_DIR
 ARG BUILD_TYPE=release
 ARG NUM_BUILD_WORKERS=8
-ARG DOSBOX_STAGING_VER
+ARG RUNNER_VER
 ARG SRC_DIR=/tmp/src
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -26,7 +26,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${SRC_DIR}
 
-RUN git clone --depth 1 --single-branch --branch v${DOSBOX_STAGING_VER} https://github.com/dosbox-staging/dosbox-staging.git
+RUN git clone --depth 1 --single-branch --branch v${RUNNER_VER} https://github.com/dosbox-staging/dosbox-staging.git
 
 RUN pip install meson --break-system-packages
 

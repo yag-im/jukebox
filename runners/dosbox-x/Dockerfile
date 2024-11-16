@@ -8,7 +8,7 @@ FROM ${BUILDER_BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
 ARG NUM_BUILD_WORKERS=8
-ARG DOSBOX_X_VER
+ARG RUNNER_VER
 ARG SRC_DIR=/tmp/src
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -24,7 +24,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${SRC_DIR}
 
-RUN git clone --depth 1 --single-branch --branch dosbox-x-v${DOSBOX_X_VER} https://github.com/joncampbell123/dosbox-x.git
+RUN git clone --depth 1 --single-branch --branch dosbox-x-v${RUNNER_VER} https://github.com/joncampbell123/dosbox-x.git
 
 RUN cd ./dosbox-x \
     && ./build-sdl2 \
