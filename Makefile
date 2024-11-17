@@ -5,14 +5,12 @@ include envs/build.env
 include envs/run.env
 export
 
-ECR_REPO := $(AWS_ACCOUNT_ID_INFRA).dkr.ecr.$(AWS_ECR_REGION).amazonaws.com/$(AWS_ECR_REPO)
-
 DOCKER_BASE_IMAGE := $(WINDOW_SYSTEM)_$(VIDEO_ENC)
-DOCKER_DOSBOX_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox_$(DOSBOX_VER)_$(DOCKER_IMAGE_REV_TAG)
-DOCKER_DOSBOX_STAGING_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-staging_$(DOSBOX_STAGING_VER)_$(DOCKER_IMAGE_REV_TAG)
-DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-x_$(DOSBOX_X_VER)_$(DOCKER_IMAGE_REV_TAG)
-DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE)_scummvm_$(SCUMMVM_VER)_$(DOCKER_IMAGE_REV_TAG)
-DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE)_wine_$(WINE_VER)_$(DOCKER_IMAGE_REV_TAG)
+DOCKER_DOSBOX_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox_$(DOSBOX_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_DOSBOX_STAGING_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-staging_$(DOSBOX_STAGING_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-x_$(DOSBOX_X_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE)_scummvm_$(SCUMMVM_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE)_wine_$(WINE_VER):$(DOCKER_IMAGE_REV_TAG)
 
 DOCKER_BUILDER_BASE_IMAGE := $(DOCKER_GENESIS_IMAGE)
 DOCKER_NETWORK := host
@@ -33,8 +31,7 @@ build-base: ## Build base jukebox image
 		--build-arg VIDEO_ENC=$(VIDEO_ENC) \
 		--build-arg WINDOW_SYSTEM=$(WINDOW_SYSTEM) \
 		-f runners/base/$(WINDOW_SYSTEM)/$(VIDEO_ENC)/Dockerfile \
-		runners/base \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_BASE_IMAGE))
+		runners/base
 
 .PHONY: build-dosbox-staging
 build-dosbox-staging: ## Build dosbox-staging jukebox image
@@ -46,8 +43,7 @@ build-dosbox-staging: ## Build dosbox-staging jukebox image
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
 		--build-arg RUNNER_VER=$(DOSBOX_STAGING_VER) \
 		-f runners/dosbox-staging/Dockerfile \
-		runners/dosbox-staging \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_STAGING_IMAGE)
+		runners/dosbox-staging
 
 .PHONY: build-dosbox-x
 build-dosbox-x: ## Build dosbox-x jukebox image
@@ -59,8 +55,7 @@ build-dosbox-x: ## Build dosbox-x jukebox image
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
 		--build-arg RUNNER_VER=$(DOSBOX_X_VER) \
 		-f runners/dosbox-x/Dockerfile \
-		runners/dosbox-x \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_X_IMAGE)
+		runners/dosbox-x
 
 .PHONY: build-dosbox
 build-dosbox: ## Build dosbox jukebox image
@@ -71,8 +66,7 @@ build-dosbox: ## Build dosbox jukebox image
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
 		--build-arg RUNNER_VER=$(DOSBOX_VER) \
 		-f runners/dosbox/Dockerfile \
-		runners/dosbox \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_DOSBOX_IMAGE)
+		runners/dosbox
 
 .PHONY: build-scummvm
 build-scummvm: ## Build scummvm jukebox image
@@ -82,10 +76,9 @@ build-scummvm: ## Build scummvm jukebox image
 		--progress plain \
 		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
 		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg RUNNER_VER=$(RUNNER_VER) \
+		--build-arg RUNNER_VER=$(SCUMMVM_VER) \
 		-f runners/scummvm/Dockerfile \
-		runners/scummvm \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_SCUMMVM_IMAGE)
+		runners/scummvm
 
 .PHONY: build-wine
 build-wine: ## Build wine jukebox image
@@ -99,8 +92,7 @@ build-wine: ## Build wine jukebox image
 		--build-arg RUNNER_BRANCH=$(WINE_BRANCH) \
 		--build-arg RUNNER_VER=$(WINE_VER) \
 		-f runners/wine/Dockerfile \
-		runners/wine \
-	#&& $(MAKE) publish-image DOCKER_IMAGE=$(DOCKER_WINE_IMAGE)
+		runners/wine
 
 .PHONY: build-all ## Build all jukebox images
 build-all:
@@ -194,16 +186,3 @@ run-wine: ## Run wine jukebox
 		DOCKER_RUN_NAME=$(DOCKER_WINE_IMAGE)-$(STREAM_WORKER_NUM) \
 		DOCKER_IMAGE=$(DOCKER_WINE_IMAGE) \
 		YAG_VOLUME=$(YAG_VOLUME)
-
-.PHONY: publish-image
-publish-image: ## publish docker image
-	docker image tag $(DOCKER_IMAGE) $(ECR_REPO):$(DOCKER_IMAGE)
-	AWS_PROFILE=$(AWS_ECR_PROFILE) docker push $(ECR_REPO):$(DOCKER_IMAGE)
-
-.PHONY: publish-all-latest
-publish-all-latest:
-	${MAKE} publish-image DOCKER_IMAGE=${DOCKER_DOSBOX_IMAGE}
-	${MAKE} publish-image DOCKER_IMAGE=${DOCKER_DOSBOX_STAGING_IMAGE}
-	${MAKE} publish-image DOCKER_IMAGE=${DOCKER_DOSBOX_X_IMAGE}
-	${MAKE} publish-image DOCKER_IMAGE=${DOCKER_SCUMMVM_IMAGE}
-	${MAKE} publish-image DOCKER_IMAGE=${DOCKER_WINE_IMAGE}
