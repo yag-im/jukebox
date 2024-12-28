@@ -23,8 +23,9 @@ jobs:
         window_system:
           - x11
         video_enc:
-          - gpu-intel
           - cpu
+          - gpu-intel
+          - gpu-nvidia
     permissions:
       contents: read
       packages: write
@@ -51,8 +52,7 @@ jobs:
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           build-args: |
-            BUILDER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
-            RUNNER_BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
             RUNNER_VER=${{ env.RUNNER_VER }}
           context: ./runners/${{ env.RUNNER }}
           labels: ${{ steps.meta.outputs.labels }}
