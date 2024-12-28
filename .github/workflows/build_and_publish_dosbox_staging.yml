@@ -44,9 +44,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}_${{ env.RUNNER_VER }}
+          images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ env.RUNNER_VER }},enable={{is_default_branch}}
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
@@ -61,6 +61,6 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME}}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}_${{ env.RUNNER_VER }}
+          subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME}}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
