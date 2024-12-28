@@ -4,7 +4,6 @@ set -eux
 
 BUILD_NUM_WORKERS=8
 BUILD_DIR="/tmp/build"
-BUILD_TYPE=Release
 SRC_DIR="/tmp/src"
 
 cd "$SRC_DIR"

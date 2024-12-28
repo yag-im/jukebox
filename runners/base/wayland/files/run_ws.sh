@@ -25,7 +25,7 @@ export WLR_RENDERER=gles2
 export WLR_RENDER_DRM_DEVICE=/dev/dri/renderD${WLR_RENDER_DRM_DEVICE:-128}
 export XDG_CONFIG_HOME=/usr/share
 export XDG_CURRENT_DESKTOP=wlroots
-export XDG_RUNTIME_DIR=/run/user/1000
+export XDG_RUNTIME_DIR=/run/user/${USER_UID}
 export XDPW_LOG_LEVEL=${XDPW_LOG_LEVEL:-ERROR}
 
 CHECK_PERIOD=0.05

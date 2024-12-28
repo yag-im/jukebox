@@ -1,16 +1,16 @@
-ARG BUILDER_BASE_IMAGE
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 ARG BUILD_DIR=/tmp/build
 
-FROM ${BUILDER_BASE_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
 ARG BUILD_NUM_WORKERS=8
-ARG BUILD_TYPE=Release
 ARG SRC_DIR=/tmp/src
 ARG VIDEO_ENC
 ARG WINDOW_SYSTEM
+# default log level: INFO
+ARG STREAMD_LOG_LEVEL=2
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -32,20 +32,21 @@ COPY files/patches ./patches
 COPY files/build_gstreamer.sh .
 RUN ./build_gstreamer.sh ${BUILD_DIR}
 
+# streamd will try to find gstreamer package while building
+RUN cp -r $BUILD_DIR/* /usr
+
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
-RUN cd streamd && ./build.sh ${WINDOW_SYSTEM} ${VIDEO_ENC} ${BUILD_DIR}
+RUN cd streamd && ./build.sh --window-system ${WINDOW_SYSTEM} --video-enc ${VIDEO_ENC} --build-dir ${BUILD_DIR} --log-level ${STREAMD_LOG_LEVEL}
 
 # runner
-FROM ${RUNNER_BASE_IMAGE} AS runner
+FROM ${BASE_IMAGE} AS runner
 
-# TODO: use $USERNAME build arg for USERNAME
 ARG BUILD_DIR
 ARG USERNAME
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 ENV DEBIAN_FRONTEND=noninteractive
-
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -100,5 +101,6 @@ COPY x11/files/daemon.conf /etc/pulse/daemon.conf
 COPY files/init.sh /etc/init.d/init.sh
 
 ENV USERNAME=$USERNAME
+ENV USER_UID=$USER_UID
 
 ENTRYPOINT ["/etc/init.d/init.sh"]

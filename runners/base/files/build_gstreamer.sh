@@ -3,7 +3,7 @@
 set -eux
 
 if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 BUILD_DIR"
+    echo "Usage: $0 BUILD_DIR [--gpu-nvidia | --gpu-intel]"
     exit 1
 fi
 
@@ -16,14 +16,13 @@ fi
 # sctp: required by webrtc
 # pango: required for time/text overlays
 
-BUILD_TYPE=release
 BUILD_BIN_PREFIX=$1
-GSTREAMER_VERSION=1.24.8
+GSTREAMER_VERSION=1.24.10
 GST_PLUGINS_RS_VERSION=add_send_webrtc_stats
 
 apt-get update \
     && apt-get install --no-install-recommends -y \
-      build-essential pkg-config cmake libssl-dev libunwind-dev libdw-dev \
+      build-essential curl pkg-config cmake libssl-dev libunwind-dev libdw-dev \
       libpango1.0-dev libpulse-dev libsrtp2-dev pip flex bison ninja-build \
       xserver-xorg-video-dummy x11-xserver-utils libxkbcommon-dev \
       libdrm-dev \
@@ -38,14 +37,18 @@ rustup update
 cargo install --locked cargo-c
 
 git clone --depth=1 --single-branch --branch "$GSTREAMER_VERSION"  https://github.com/GStreamer/gstreamer.git
+# fix 100ms delay A/V sync issue in chrome
 patch gstreamer/subprojects/gst-plugins-good/gst/rtpmanager/rtpsource.c patches/rtpsource.c.patch
 git clone --depth=1 --single-branch --branch "$GST_PLUGINS_RS_VERSION"  https://gitlab.freedesktop.org/rayrapetyan/gst-plugins-rs.git gstreamer/subprojects/gst-plugins-rs
 
 cd gstreamer
 
+NVIDIA_OPTION=$([[ "$@" =~ "--gpu-nvidia" ]] && echo "-Dgst-plugins-bad:nvcodec=enabled" || echo "")
+INTEL_OPTION=$([[ "$@" =~ "--gpu-intel" ]] && echo "-Dgst-plugins-bad:qsv=enabled -Dgst-plugins-bad:va=enabled" || echo "")
+
 meson setup \
     --wipe \
-    -Dbuildtype=$BUILD_TYPE \
+    -Dbuildtype=release \
     -Dprefix=$BUILD_BIN_PREFIX \
     -Dauto_features=disabled \
     -Dgpl=enabled \
@@ -76,10 +79,10 @@ meson setup \
     -Dgst-plugins-bad:dtls=enabled \
     -Dgst-plugins-bad:sctp=enabled \
     -Dgst-plugins-bad:srtp=enabled \
-    -Dgst-plugins-bad:qsv=enabled \
-    -Dgst-plugins-bad:va=enabled \
     -Dgst-plugins-bad:videoparsers=enabled \
     -Dgst-plugins-bad:webrtc=enabled \
+    $NVIDIA_OPTION \
+    $INTEL_OPTION \
     -Dugly=enabled \
     -Dgst-plugins-ugly:x264=enabled \
     -Dtls=enabled \

@@ -1,13 +1,11 @@
-ARG BUILDER_BASE_IMAGE
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 ARG BUILD_DIR=/tmp/build
 
 # dosbox-staging binaries builder
-FROM ${BUILDER_BASE_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
-ARG BUILD_TYPE=release
 ARG NUM_BUILD_WORKERS=8
 ARG RUNNER_VER
 ARG SRC_DIR=/tmp/src
@@ -32,7 +30,7 @@ RUN pip install meson --break-system-packages
 
 RUN cd ./dosbox-staging \
     && meson setup \
-        -Dbuildtype=$BUILD_TYPE \
+        -Dbuildtype=release \
         -Dprefix=$BUILD_DIR \
         -Duse_mt32emu=false \
         -Duse_zlib_ng=false \
@@ -41,7 +39,7 @@ RUN cd ./dosbox-staging \
     && meson install -C build
 
 # dosbox-staging runner
-FROM ${RUNNER_BASE_IMAGE} AS runner
+FROM ${BASE_IMAGE} AS runner
 ARG BUILD_DIR
 
 ENV DEBIAN_FRONTEND=noninteractive

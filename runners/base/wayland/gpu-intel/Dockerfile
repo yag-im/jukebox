@@ -1,16 +1,16 @@
-ARG BUILDER_BASE_IMAGE
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 ARG BUILD_DIR=/tmp/build
 
-FROM ${BUILDER_BASE_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
 ARG BUILD_NUM_WORKERS=8
-ARG BUILD_TYPE=Release
 ARG SRC_DIR=/tmp/src
 ARG VIDEO_ENC
 ARG WINDOW_SYSTEM
+# default log level: INFO
+ARG STREAMD_LOG_LEVEL=2
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PKG_CONFIG_PATH=$BUILD_DIR/lib/x86_64-linux-gnu/pkgconfig/:$BUILD_DIR/share/pkgconfig/
@@ -22,7 +22,7 @@ RUN apt-get update \
         ca-certificates \
         cmake \
         curl \
-        git \        
+        git \
         pkg-config
 
 WORKDIR $SRC_DIR
@@ -38,13 +38,15 @@ RUN ./build_wayland_deps.sh
 COPY files/build_gstreamer.sh .
 RUN ./build_gstreamer.sh ${BUILD_DIR}
 
+# streamd will try to find gstreamer package while building
+RUN cp -r $BUILD_DIR/* /usr
+
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
-RUN cd streamd && ./build.sh ${WINDOW_SYSTEM} ${VIDEO_ENC} ${BUILD_DIR}
+RUN cd streamd && ./build.sh --window-system ${WINDOW_SYSTEM} --video-enc ${VIDEO_ENC} --build-dir ${BUILD_DIR} --log-level ${STREAMD_LOG_LEVEL}
 
 # runner
-FROM ${RUNNER_BASE_IMAGE} AS runner
+FROM ${BASE_IMAGE} AS runner
 
-# TODO: use $USERNAME build arg for USERNAME
 ARG BUILD_DIR
 ARG USERNAME
 ARG USER_UID=1000
@@ -84,7 +86,6 @@ RUN apt-get update \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-# create non-root user TODO: drop sudo
 # TODO: sync /run/user/$USER_UID with XDG_RUNTIME_DIR
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -s /bin/bash \
@@ -108,6 +109,7 @@ RUN chown -R $USERNAME:$USERNAME /home/$USERNAME
 COPY files/init.sh /etc/init.d/init.sh
 
 ENV USERNAME=$USERNAME
+ENV USER_UID=$USER_UID
 
 ENTRYPOINT ["/etc/init.d/init.sh"]
 

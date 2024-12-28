@@ -5,16 +5,22 @@ include envs/build.env
 include envs/run.env
 export
 
-DOCKER_BASE_IMAGE := $(WINDOW_SYSTEM)_$(VIDEO_ENC)
-DOCKER_DOSBOX_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox_$(DOSBOX_VER):$(DOCKER_IMAGE_REV_TAG)
-DOCKER_DOSBOX_STAGING_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-staging_$(DOSBOX_STAGING_VER):$(DOCKER_IMAGE_REV_TAG)
-DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE)_dosbox-x_$(DOSBOX_X_VER):$(DOCKER_IMAGE_REV_TAG)
-DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE)_scummvm_$(SCUMMVM_VER):$(DOCKER_IMAGE_REV_TAG)
-DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE)_wine_$(WINE_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_BASE_IMAGE_PREFIX := $(WINDOW_SYSTEM)_$(VIDEO_ENC)
+DOCKER_BASE_IMAGE_TAG := $(DOCKER_BASE_IMAGE_PREFIX)_base
+DOCKER_DOSBOX_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox_$(DOSBOX_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_DOSBOX_STAGING_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox-staging_$(DOSBOX_STAGING_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox-x_$(DOSBOX_X_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_scummvm_$(SCUMMVM_VER):$(DOCKER_IMAGE_REV_TAG)
+DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_wine_$(WINE_VER):$(DOCKER_IMAGE_REV_TAG)
 
-DOCKER_BUILDER_BASE_IMAGE := $(DOCKER_GENESIS_IMAGE)
 DOCKER_NETWORK := host
 RND_PREFIX := $(shell LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 10)
+
+ifeq ($(VIDEO_ENC),gpu-nvidia)
+    DOCKER_GENESIS_IMAGE := $(DOCKER_GENESIS_IMAGE_NVIDIA)
+	OS_TYPE := $(OS_TYPE_NVIDIA)
+	OS_VER := $(OS_VER_NVIDIA)
+endif
 
 .PHONY: help
 help: ## This help
@@ -23,13 +29,13 @@ help: ## This help
 .PHONY: build-base 
 build-base: ## Build base jukebox image
 	docker build \
-		-t $(DOCKER_BASE_IMAGE) \
+		-t $(DOCKER_BASE_IMAGE_TAG) \
 		--progress plain \
-		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
+		--build-arg BASE_IMAGE=$(DOCKER_GENESIS_IMAGE) \
 		--build-arg USERNAME=$(USERNAME) \
 		--build-arg VIDEO_ENC=$(VIDEO_ENC) \
 		--build-arg WINDOW_SYSTEM=$(WINDOW_SYSTEM) \
+		--build-arg STREAMD_LOG_LEVEL=$(STREAMD_LOG_LEVEL) \
 		-f runners/base/$(WINDOW_SYSTEM)/$(VIDEO_ENC)/Dockerfile \
 		runners/base
 
@@ -39,8 +45,7 @@ build-dosbox-staging: ## Build dosbox-staging jukebox image
 	&& docker build \
 		-t $(DOCKER_DOSBOX_STAGING_IMAGE) \
 		--progress plain \
-		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
 		--build-arg RUNNER_VER=$(DOSBOX_STAGING_VER) \
 		-f runners/dosbox-staging/Dockerfile \
 		runners/dosbox-staging
@@ -51,8 +56,7 @@ build-dosbox-x: ## Build dosbox-x jukebox image
 	&& docker build \
 		-t $(DOCKER_DOSBOX_X_IMAGE) \
 		--progress plain \
-		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
 		--build-arg RUNNER_VER=$(DOSBOX_X_VER) \
 		-f runners/dosbox-x/Dockerfile \
 		runners/dosbox-x
@@ -63,7 +67,8 @@ build-dosbox: ## Build dosbox jukebox image
 	&& docker build \
 		-t $(DOCKER_DOSBOX_IMAGE) \
 		--progress plain \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
+		--build-arg OS_TYPE=$(OS_TYPE) \
 		--build-arg RUNNER_VER=$(DOSBOX_VER) \
 		-f runners/dosbox/Dockerfile \
 		runners/dosbox
@@ -74,8 +79,8 @@ build-scummvm: ## Build scummvm jukebox image
 	&& docker build \
 		-t $(DOCKER_SCUMMVM_IMAGE) \
 		--progress plain \
-		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
+		--build-arg OS_TYPE=$(OS_TYPE) \
 		--build-arg RUNNER_VER=$(SCUMMVM_VER) \
 		-f runners/scummvm/Dockerfile \
 		runners/scummvm
@@ -86,9 +91,9 @@ build-wine: ## Build wine jukebox image
 	&& docker build \
 		-t $(DOCKER_WINE_IMAGE) \
 		--progress plain \
-		--build-arg BUILDER_BASE_IMAGE=$(DOCKER_BUILDER_BASE_IMAGE) \
-		--build-arg RUNNER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-		--build-arg DEBIAN_VER=$(DEBIAN_VER) \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
+		--build-arg OS_TYPE=$(OS_TYPE) \
+		--build-arg OS_VER=$(OS_VER) \
 		--build-arg RUNNER_BRANCH=$(WINE_BRANCH) \
 		--build-arg RUNNER_VER=$(WINE_VER) \
 		-f runners/wine/Dockerfile \
@@ -155,8 +160,8 @@ run-jukebox:
 .PHONY: run-base
 run-base: ## Run base (available only for debugging purposes)
 	$(MAKE) run-jukebox \
-		DOCKER_RUN_NAME=$(DOCKER_BASE_IMAGE)-$(STREAM_WORKER_NUM) \
-		DOCKER_IMAGE=$(DOCKER_BASE_IMAGE) \
+		DOCKER_RUN_NAME=$(DOCKER_BASE_IMAGE_PREFIX)-$(STREAM_WORKER_NUM) \
+		DOCKER_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
 		YAG_VOLUME=$(YAG_VOLUME)
 
 .PHONY: run-dosbox-staging

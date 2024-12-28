@@ -13,10 +13,10 @@ export PKG_CONFIG_PATH="$BUILD_DIR/lib/pkgconfig:$BUILD_DIR/lib/x86_64-linux-gnu
 
 BUILD_NUM_WORKERS=8
 BUILD_DIR="/tmp/build"
-BUILD_TYPE=Release
 SRC_DIR="/tmp/src"
 
-# i965-va-driver is the intel-vaapi-driver (2.4.1 released 4 years ago and has never been updated since then)
+# i965-va-driver is the intel-vaapi-driver (2.4.1 was released in 2020 and has never been updated since then)
+# https://github.com/intel/intel-vaapi-driver/releases
 apt-get install -y --no-install-recommends \
         i965-va-driver \
         libdrm-dev \
@@ -58,7 +58,7 @@ fi
 cd "$SRC_DIR"
 
 # dep: intel-libva
-LIBVA_VERSION="2.20.0"
+LIBVA_VERSION="2.22.0"
 LIBVA_URL="https://github.com/intel/libva/releases/download/$LIBVA_VERSION/libva-$LIBVA_VERSION.tar.bz2"
 mkdir libva \
     && curl -# -L -f "$LIBVA_URL" | tar xj --strip 1 -C libva \
@@ -77,9 +77,9 @@ mkdir libva \
 cd "$SRC_DIR"
 
 # dep: intel-media-driver
-GMMLIB_VERSION="22.3.16"
+GMMLIB_VERSION="22.5.5"
 GMMLIB_URL="https://github.com/intel/gmmlib/archive/intel-gmmlib-$GMMLIB_VERSION.tar.gz"
-INTEL_MEDIA_DRIVER_VERSION="23.4.3"
+INTEL_MEDIA_DRIVER_VERSION="24.3.4"
 INTEL_MEDIA_DRIVER_URL="https://github.com/intel/media-driver/archive/intel-media-$INTEL_MEDIA_DRIVER_VERSION.tar.gz"
 # intel-media-driver looks in ../gmmlib
 mkdir gmmlib \
@@ -89,7 +89,7 @@ mkdir intel-media-driver \
     && mkdir intel-media-driver/build \
     && cd intel-media-driver/build \
     && cmake \
-        -DBUILD_TYPE="$BUILD_TYPE" \
+        -DBUILD_TYPE="Release" \
         -DCMAKE_INSTALL_PREFIX="$BUILD_DIR" \
         -DMEDIA_RUN_TEST_SUITE="OFF" \
         -DSKIP_GMM_CHECK="ON" \
@@ -100,14 +100,14 @@ mkdir intel-media-driver \
 cd "$SRC_DIR"
 
 # dep: oneVPL-intel-gpu
-INTEL_ONEVPL_GPU_RUNTIME_VERSION="23.4.3"
+INTEL_ONEVPL_GPU_RUNTIME_VERSION="24.3.4"
 INTEL_ONEVPL_GPU_RUNTIME_URL="https://github.com/oneapi-src/oneVPL-intel-gpu/archive/refs/tags/intel-onevpl-$INTEL_ONEVPL_GPU_RUNTIME_VERSION.tar.gz"
 mkdir oneVPL-intel-gpu \
     && curl -# -L -f "$INTEL_ONEVPL_GPU_RUNTIME_URL" | tar xz --strip 1 -C oneVPL-intel-gpu \
     && mkdir oneVPL-intel-gpu/build \
     && cd oneVPL-intel-gpu/build \
     && cmake \
-        -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+        -DCMAKE_BUILD_TYPE="Release" \
         -DCMAKE_INSTALL_PREFIX="$BUILD_DIR" \
         ../ \
     && make -j$BUILD_NUM_WORKERS \

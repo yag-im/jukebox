@@ -1,112 +1,82 @@
-# check CUDA version on the host machine using: `nvidia-smi` before upgrading base image version
-ARG IMAGE=nvidia/cuda:11.4.3-devel-ubuntu20.04
+ARG BASE_IMAGE
 
-FROM $IMAGE AS builder
+ARG BUILD_DIR=/tmp/build
+
+FROM ${BASE_IMAGE} AS builder
+
+ARG BUILD_DIR
+ARG BUILD_NUM_WORKERS=8
+ARG SRC_DIR=/tmp/src
+ARG VIDEO_ENC
+ARG WINDOW_SYSTEM
+# default log level: INFO
+ARG STREAMD_LOG_LEVEL=2
 
 ENV DEBIAN_FRONTEND=noninteractive
-
-ARG BUILD_BIN_PREFIX=/packages
-ARG BUILD_TYPE=release
-ARG BUILD_NUM_WORKERS=8
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-      x11-apps \
-      wget curl ca-certificates pulseaudio libcairo2 libxcb1 libxrandr2 libxv1 libopus0 libvpx6 \
-      git build-essential pkg-config cmake libcap2 libcap-dev \
-      libssl-dev libcurl4-openssl-dev liblog4cplus-dev \
-      libxrandr-dev libxtst-dev libboost-dev \
-      # gstreamer build deps:
-      libpango1.0-dev libpulse-dev libsrtp2-dev pip flex bison ninja-build \
-   && apt-get clean -y \
-   && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+    && apt-get install -y --no-install-recommends \
+        automake \
+        build-essential \
+        ca-certificates \
+        cmake \
+        curl \
+        git \
+        libdrm-dev \
+        libx11-dev \
+        libx11-xcb-dev \
+        libxcb-dri3-dev \
+        libxext-dev \
+        libxtst-dev \
+        libxfixes-dev \
+        pkg-config
 
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH=/root/.cargo/bin:${PATH}
+WORKDIR $SRC_DIR
 
-RUN pip install meson tomli
-RUN cargo install cargo-c
+COPY files/patches ./patches
 
-WORKDIR /src
+COPY files/build_gstreamer.sh .
+RUN ./build_gstreamer.sh ${BUILD_DIR} --${VIDEO_ENC}
 
-# COPY gstreamer/subprojects/packages $BUILD_BIN_PREFIX
-# RUN git clone --depth 1 --single-branch --branch main https://gitlab.freedesktop.org/gstreamer/gstreamer.git
+# streamd will try to find gstreamer package while building
+RUN cp -r $BUILD_DIR/* /usr
 
-COPY gstreamer /src/gstreamer
-RUN rm -rf /src/gstreamer/build
+RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
+RUN cd streamd && ./build.sh --window-system ${WINDOW_SYSTEM} --video-enc ${VIDEO_ENC} --build-dir ${BUILD_DIR} --log-level ${STREAMD_LOG_LEVEL}
 
-RUN cd gstreamer \
-    && meson setup \
-        --wipe \
-        -Dbuildtype=$BUILD_TYPE \
-        -Dprefix=$BUILD_BIN_PREFIX \
-        -Dauto_features=disabled \
-        -Dgpl=enabled \
-        -Dtools=enabled \
-        -Dlibnice=enabled \
-        -Dlibnice:gstreamer=enabled \
-        -Dbase=enabled \
-        -Dgst-plugins-base:app=enabled \
-        -Dgst-plugins-base:audioconvert=enabled \
-        -Dgst-plugins-base:audioresample=enabled \
-        -Dgst-plugins-base:opus=enabled \
-        -Dgst-plugins-base:pango=enabled \
-        -Dgst-plugins-base:tools=enabled \
-        -Dgst-plugins-base:videoconvertscale=enabled \
-        -Dgst-plugins-base:videorate=enabled \
-        -Dgst-plugins-base:videotestsrc=enabled \
-        -Dgst-plugins-base:x11=enabled \
-        -Dgst-plugins-base:xshm=enabled \
-        -Dgood=enabled \
-        -Dgst-plugins-good:pulse=enabled \
-        -Dgst-plugins-good:rtp=enabled \
-        -Dgst-plugins-good:rtpmanager=enabled \
-        -Dgst-plugins-good:ximagesrc=enabled \
-        -Dgst-plugins-good:ximagesrc-xfixes=enabled \
-        -Dgst-plugins-good:ximagesrc-xshm=enabled \
-        -Dgst-plugins-good:ximagesrc-navigation=enabled \
-        -Dbad=enabled \
-        -Dgst-plugins-bad:dtls=enabled \
-        -Dgst-plugins-bad:sctp=enabled \
-        -Dgst-plugins-bad:srtp=enabled \
-        -Dgst-plugins-bad:videoparsers=enabled \
-        -Dgst-plugins-bad:webrtc=enabled \
-        -Dgst-plugins-bad:nvcodec=enabled \
-        -Dtls=enabled \
-        -Drs=enabled \
-        -Dgst-plugins-rs:rtp=enabled \
-        -Dwebrtc=enabled \
-        -Dtests=disabled \
-        -Dexamples=disabled \
-        build \
-    && ninja -C build \
-    && meson install -C build
+# runner
+FROM ${BASE_IMAGE} AS runner
 
-FROM $IMAGE AS runner
-
-ARG BUILD_BIN_PREFIX=/packages
-
-ENV DEBIAN_FRONTEND=noninteractive
-
+ARG BUILD_DIR
 ARG USERNAME
+# TODO: sync-up with an appstor hardcoded user IDs (search for 1000 in the yag-infra project)
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
+ARG USER_UBUNTU=ubuntu
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+# libnvidia-encode is requred by gstreamer pipeline at runtime
+# TODO: sync libnvidia-encode-560 with nvidia-smi version on the host
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        ca-certificates openssl \
+    && apt-get install -y --no-install-recommends \
         xserver-xorg-video-dummy x11-xserver-utils \
         pulseaudio \
-        supervisor \
-        openbox xfce4-terminal firefox procps \
+        openssl \
+        openbox \
+        procps \
+        xterm \
         libsrtp2-dev \
+        libnvidia-encode-560 \
+        # firefox \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-# create non-root user TODO: drop sudo
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -s /bin/bash \
-    && usermod -aG sudo,audio,video,pulse $USERNAME \
+# TODO: sync /run/user/$USER_UID with XDG_RUNTIME_DIR
+# in the nvidia base image UID 1000 is already occupied by ubuntu user, so just renaming it as id must be preserved for appstor mount needs
+RUN usermod -md /home/$USERNAME -l $USERNAME $USER_UBUNTU \
+    && groupmod -n $USERNAME $USER_UBUNTU \
+    && usermod -aG audio,video,pulse $USERNAME \
     && mkdir -p /run/user/$USER_UID \
     && chmod 0700 /run/user/$USER_UID \
     && chown $USERNAME /run/user/$USER_UID
@@ -114,22 +84,35 @@ RUN groupadd --gid $USER_GID $USERNAME \
 RUN mkdir -p /home/$USERNAME/.config/pulse/ \
     && echo "default-server=unix:/tmp/pulseaudio.socket" > /home/$USERNAME/.config/pulse/client.conf
 
+# sudo block
+# RUN apt-get update \
+#     && apt-get install -y sudo \
+#     && usermod -aG sudo $USERNAME \
+#     && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
+
 RUN chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-COPY files/run_streamer.sh /home/$USERNAME
-COPY files/dbus /usr/bin/dbus
-COPY files/default.pa /etc/pulse/default.pa
+# TODO: sync with XDG_RUNTIME_DIR
+RUN mkdir -p /tmp/x11 && chown -R $USERNAME /tmp/x11
+RUN mkdir -p /usr/share/pulse && chown -R $USERNAME /usr/share/pulse
 
-COPY conf/xorg.conf /home/$USERNAME/xorg.conf
-COPY conf/supervisord.conf /home/$USERNAME/supervisord.conf
-COPY conf/openbox.xml /home/$USERNAME/openbox.xml
+COPY --from=builder $BUILD_DIR /usr
 
-COPY --from=builder $BUILD_BIN_PREFIX /usr
-RUN ldconfig
+COPY x11/files/run_ws.sh /home/$USERNAME
+COPY x11/files/restart_streamd.sh /home/$USERNAME
+COPY x11/files/default.pa /etc/pulse/default.pa
+COPY x11/files/xorg.conf /home/$USERNAME/xorg.conf
+COPY x11/files/openbox.xml /home/$USERNAME/openbox.xml
+COPY x11/files/daemon.conf /etc/pulse/daemon.conf
 
-# app clones mount point
-RUN mkdir /opt/yag && chown -R $USERNAME /opt/yag
+COPY files/init.sh /etc/init.d/init.sh
 
 ENV USERNAME=$USERNAME
+ENV USER_UID=$USER_UID
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/gamer/supervisord.conf"]
+# without modified LD_LIBRARY_PATH, pipeline fails with: 
+# libcuda.so.1: cannot open shared object file: No such file or directory
+# TODO: sync ver 12.6 in the path with the base image ver
+ENV LD_LIBRARY_PATH=/usr/local/cuda-12.6/compat:$LD_LIBRARY_PATH
+
+ENTRYPOINT ["/etc/init.d/init.sh"]

@@ -1,10 +1,9 @@
-ARG BUILDER_BASE_IMAGE
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 ARG BUILD_DIR=/tmp/build
 
 # dosbox-x binaries builder
-FROM ${BUILDER_BASE_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 ARG BUILD_DIR
 ARG NUM_BUILD_WORKERS=8
@@ -31,7 +30,7 @@ RUN cd ./dosbox-x \
     && make DESTDIR=${BUILD_DIR} install
 
 # dosbox-x runner
-FROM ${RUNNER_BASE_IMAGE} AS runner
+FROM ${BASE_IMAGE} AS runner
 ARG BUILD_DIR
 
 ENV DEBIAN_FRONTEND=noninteractive

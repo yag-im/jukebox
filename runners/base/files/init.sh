@@ -51,7 +51,7 @@ fi
 
 su --preserve-environment "${USERNAME}" <<EOF
 
-export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/dbus
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$USER_UID/dbus
 
 # intel
 export LIBVA_DRIVER_NAME=iHD

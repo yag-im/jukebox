@@ -1,12 +1,13 @@
-ARG BUILDER_BASE_IMAGE
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 ARG PACKAGES_DIR=/tmp/packages
 
 # wine binaries builder
-FROM ${BUILDER_BASE_IMAGE} AS builder
+FROM ${BASE_IMAGE} AS builder
 
 ARG BUILD_DIR=/tmp/build
+ARG OS_TYPE
+ARG OS_VER
 ARG PACKAGES_DIR
 ARG SRC_DIR=/tmp/src
 
@@ -46,7 +47,7 @@ RUN apt-get install -y --no-install-recommends \
     libfreetype-dev \
     libgl-dev \
     libgstreamer1.0-dev \
-    libgstreamer-plugins-base1.0-dev \    
+    libgstreamer-plugins-base1.0-dev \
     libosmesa6-dev \
     libpulse-dev \
     libsdl2-dev \
@@ -74,7 +75,11 @@ RUN ${SRC_DIR}/wine/configure \
 # install wine32 deps
 RUN dpkg --add-architecture i386 \
     && apt-get update
-RUN apt-get install -y --no-install-recommends \
+
+# otherwise libudev-dev:i386 installation fails on ubuntu
+RUN rm -rf /usr/share/gir-1.0/GUdev-1.0.gir
+
+RUN apt-get install -y \
     libasound2-dev:i386 \
     libfontconfig-dev:i386 \
     libfreetype-dev:i386 \
@@ -114,13 +119,14 @@ RUN ${SRC_DIR}/wine/configure \
     && make -j${NUM_BUILD_WORKERS} \
     && make install
 
-ARG RUNNER_BASE_IMAGE
+ARG BASE_IMAGE
 
 # wine runner
-FROM ${RUNNER_BASE_IMAGE} AS runner
+FROM ${BASE_IMAGE} AS runner
 
+ARG OS_TYPE
+ARG OS_VER
 ARG PACKAGES_DIR
-ARG DEBIAN_VER
 ARG RUNNER_BRANCH
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -137,18 +143,23 @@ RUN apt-get update \
 RUN dpkg --add-architecture i386 \
     && mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/${DEBIAN_VER}/winehq-${DEBIAN_VER}.sources \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/${OS_TYPE}/dists/${OS_VER}/winehq-${OS_VER}.sources \
     && apt-get update \
     && apt-get install --install-recommends -y \
         gstreamer1.0-plugins-good:i386 \
         gstreamer1.0-libav:i386 \
         wine-${RUNNER_BRANCH} \
-        winehq-${RUNNER_BRANCH} \
+        $(if [ "${OS_TYPE}" = "debian" ]; then echo "winehq-stable"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
 # install wine32 (should go first) and wine64
 RUN rm -rf /opt/wine-stable
 COPY --from=builder ${PACKAGES_DIR}/wine32 /opt/wine-stable
 COPY --from=builder ${PACKAGES_DIR}/wine64 /opt/wine-stable
+
+RUN if [ "${OS_TYPE}" = "ubuntu" ]; then \
+        rm -rf /usr/bin/wine \
+        && ln -s /opt/wine-stable/bin/wine /usr/bin/wine; \
+    fi
 
 ENTRYPOINT ["/etc/init.d/init.sh"]
