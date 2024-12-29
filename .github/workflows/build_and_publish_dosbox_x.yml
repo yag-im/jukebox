@@ -12,7 +12,7 @@ env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   RUNNER: dosbox-x
-  RUNNER_VER: "2024.12.24"
+  RUNNER_VER: "2024.12.04"
 
 jobs:
   build-and-push-images:
