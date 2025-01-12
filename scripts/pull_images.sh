@@ -2,60 +2,68 @@
 
 set -o allexport
     source ../envs/build.env
+    source .env
 set +o allexport
 
-DOCKER_REPO=ghcr.io/yag-im/jukebox
+pull_docker_images() {
+    docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER}
+}
 
 pull_local_all() {
+    pull_docker_images
+}
+
+pull_local_mk_all() {
+    # note: vagrant VM nodes support only cpu encoder
     VIDEO_ENC=cpu
-    ssh -i ~/.vagrant.d/insecure_private_keys/vagrant.key.rsa vagrant@127.0.0.1 -p 2201 \
-        "docker pull       $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
-        "
-    ssh -i ~/.vagrant.d/insecure_private_keys/vagrant.key.rsa vagrant@127.0.0.1 -p 2202 \
-        "docker pull       $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
-        "
-}
-
-pull_dev_all() {
-    VIDEO_ENC=gpu-intel
-    ssh -i /ara/devel/acme/yag/infra/tofu/modules/bastion/files/secrets/dev/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.dev.yag.im" debian@192.168.13.2 \
-        "docker pull       $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
-        "
-}
-
-pull_prod_all() {
-    VIDEO_ENC=gpu-intel
-    HOST_IPS=("192.168.12.2" "192.168.13.2")
-    for host_ip in "${HOST_IPS[@]}"; do
-        ssh -i /ara/devel/acme/yag/infra/tofu/modules/bastion/files/secrets/prod/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.yag.im" debian@$host_ip \
-        "docker pull       $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
-            && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
-        "
+    PORTS=("2201" "2202")
+    for port in "${PORTS[@]}"; do
+        ssh -i ~/.vagrant.d/insecure_private_keys/vagrant.key.rsa vagrant@127.0.0.1 -p $port \
+            "$(declare -f pull_docker_images); pull_docker_images"
     done
 }
 
-# pull_local_all
+pull_cloud_dev_all() {
+    HOST_IPS=("192.168.12.2" "192.168.13.2")
+    for host_ip in "${HOST_IPS[@]}"; do
+        ssh -i ${BASTION_SECRETS_DIR}/dev/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.dev.yag.im" debian@$host_ip \
+            "$(declare -f pull_docker_images); pull_docker_images"
+    done
+}
 
-# note: vagrant VM nodes support only cpu encoder
-# ssh -i ~/.vagrant.d/insecure_private_keys/vagrant.key.rsa vagrant@127.0.0.1 -p 2201 "AWS_PROFILE=ecr-ro docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_cpu_wine:${WINE_VER}"
-# ssh -i ~/.vagrant.d/insecure_private_keys/vagrant.key.rsa vagrant@127.0.0.1 -p 2202 "AWS_PROFILE=ecr-ro docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_cpu_wine:${WINE_VER}"
+pull_cloud_prod_all() {
+    HOST_IPS=("192.168.12.2" "192.168.13.2")
+    for host_ip in "${HOST_IPS[@]}"; do
+        ssh -i ${BASTION_SECRETS_DIR}/prod/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.yag.im" debian@$host_ip \
+            "$(declare -f pull_docker_images); pull_docker_images"
+    done
+}
 
-# pull_dev_all
-# ssh -i /ara/devel/acme/yag/infra/tofu/modules/bastion/files/secrets/dev/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.dev.yag.im" debian@192.168.13.2 "AWS_PROFILE=ecr-ro docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER}"
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 {local_all|local_mk_all|cloud_dev_all|cloud_prod_all}"
+    exit 1
+fi
 
-pull_prod_all
+case $1 in
+    local_all)
+        pull_local_all
+        ;;
+    local_mk_all)
+        pull_local_mk_all
+        ;;
+    cloud_dev_all)
+        pull_cloud_dev_all
+        ;;
+    cloud_prod_all)
+        pull_cloud_prod_all
+        ;;
+    *)
+        echo "Invalid argument: $1"
+        echo "Usage: $0 {local_all|local_mk_all|cloud_dev_all|cloud_prod_all}"
+        exit 1
+        ;;
+esac
