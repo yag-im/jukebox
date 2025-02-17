@@ -37,7 +37,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \        
-        libncurses-dev libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev fluidsynth libfluidsynth-dev \
+        libncurses-dev libsdl-net1.2-dev libsdl2-net-dev libpcap-dev libslirp-dev \
+        fluidsynth libfluidsynth-dev fluid-soundfont-gm \
         libavformat-dev libavcodec-dev libavcodec-extra libswscale-dev libfreetype-dev libxkbfile-dev libxrandr-dev
 RUN rm -rf /var/lib/apt/lists/*
 
