@@ -29,10 +29,11 @@ jobs:
       - name: Write new version to file
         run: echo "${{ steps.tag_version.outputs.new_version }}" > new_version.txt
       - name: Upload new version artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: new-version
           path: new_version.txt
+          compression-level: 0
 
   build-and-push-images:
     runs-on: ubuntu-latest
