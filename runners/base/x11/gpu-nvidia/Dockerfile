@@ -68,6 +68,7 @@ RUN apt-get update \
         xterm \
         libsrtp2-dev \
         libnvidia-encode-560 \
+        fluidsynth fluid-soundfont-gm \
         # firefox \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*

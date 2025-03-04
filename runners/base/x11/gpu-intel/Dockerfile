@@ -69,6 +69,7 @@ RUN apt-get update \
         procps \
         xterm \
         libsrtp2-dev \
+        fluidsynth fluid-soundfont-gm \
         # firefox-esr intel-media-va-driver- \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*

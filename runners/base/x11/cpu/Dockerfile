@@ -59,6 +59,7 @@ RUN apt-get update \
         procps \
         xterm \
         libsrtp2-dev \
+        fluidsynth fluid-soundfont-gm \
         # graphviz libgraphviz-dev \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
