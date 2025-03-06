@@ -16,15 +16,6 @@ env:
   USERNAME: gamer
 
 jobs:
-  call-workflow-dosbox-staging:
-    uses: ./.github/workflows/build_and_publish_dosbox_staging.yml
-    secrets: inherit
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-
   create_tag:
     runs-on: ubuntu-latest
     steps:
@@ -113,3 +104,23 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.REPO_NAME}}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+  call-runners-builds:
+    needs: build-and-push-images
+    strategy:
+      matrix:
+        workflow: 
+          - build_and_publish_dosbox_staging.yml
+          - build_and_publish_dosbox_x.yml
+          - build_and_publish_dosbox.yml
+          - build_and_publish_scummvm.yml
+          - build_and_publish_wine.yml
+    steps:
+      - name: Call workflow ${{ matrix.workflow }}
+        uses: ./.github/workflows/${{ matrix.workflow }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write

@@ -7,6 +7,7 @@ on:
     paths:
       - runners/wine/**
       - .github/workflows/build_and_publish_wine.yml
+  workflow_call:
 
 env:
   OS_TYPE: debian
