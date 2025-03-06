@@ -19,6 +19,11 @@ jobs:
   call-workflow-dosbox-staging:
     uses: ./.github/workflows/build_and_publish_dosbox_staging.yml
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
 
   create_tag:
     runs-on: ubuntu-latest
