@@ -110,12 +110,12 @@ jobs:
     strategy:
       matrix:
         workflow: 
-          - build_and_publish_dosbox_staging.yml
-          - build_and_publish_dosbox_x.yml
-          - build_and_publish_dosbox.yml
-          - build_and_publish_scummvm.yml
-          - build_and_publish_wine.yml
-    uses: ./.github/workflows/${{ matrix.workflow }}
+          - build_and_publish_dosbox_staging
+          - build_and_publish_dosbox_x
+          - build_and_publish_dosbox
+          - build_and_publish_scummvm
+          - build_and_publish_wine
+    uses: ./.github/workflows/${{ matrix.workflow }}.yml
     secrets: inherit
     permissions:
       contents: read
