@@ -105,17 +105,49 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-  call-runners-builds:
+  call-dosbox-staging-build:
     needs: build-and-push-images
-    strategy:
-      matrix:
-        workflow: 
-          - build_and_publish_dosbox_staging
-          - build_and_publish_dosbox_x
-          - build_and_publish_dosbox
-          - build_and_publish_scummvm
-          - build_and_publish_wine
-    uses: ./.github/workflows/${{ matrix.workflow }}.yml
+    uses: ./.github/workflows/build_and_publish_dosbox_staging.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  call-dosbox-x-build:
+    needs: build-and-push-images
+    uses: ./.github/workflows/build_and_publish_dosbox_x.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  call-dosbox-build:
+    needs: build-and-push-images
+    uses: ./.github/workflows/build_and_publish_dosbox.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  call-scummvm-build:
+    needs: build-and-push-images
+    uses: ./.github/workflows/build_and_publish_scummvm.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+  call-wine-build:
+    needs: build-and-push-images
+    uses: ./.github/workflows/build_and_publish_wine.yml
     secrets: inherit
     permissions:
       contents: read
