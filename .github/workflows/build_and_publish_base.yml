@@ -16,6 +16,10 @@ env:
   USERNAME: gamer
 
 jobs:
+  call-workflow-dosbox-staging:
+    uses: ./.github/workflows/build_and_publish_dosbox_staging.yml
+    secrets: inherit
+
   create_tag:
     runs-on: ubuntu-latest
     steps:

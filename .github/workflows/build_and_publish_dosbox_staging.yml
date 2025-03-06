@@ -7,7 +7,8 @@ on:
     paths:
       - runners/dosbox-staging/**
       - .github/workflows/build_and_publish_dosbox_staging.yml
-
+  workflow_call:
+  
 env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
