@@ -46,6 +46,7 @@ RUN ./build_gstreamer.sh ${BUILD_DIR} --${VIDEO_ENC}
 RUN cp -r $BUILD_DIR/* /usr
 
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
+# COPY deps/streamd streamd
 RUN cd streamd && ./build.sh --window-system ${WINDOW_SYSTEM} --video-enc ${VIDEO_ENC} --build-dir ${BUILD_DIR} --log-level ${STREAMD_LOG_LEVEL}
 
 # runner
