@@ -18,7 +18,7 @@ env:
   REPO_NAME: ${{ github.repository }}
   RUNNER: wine
   RUNNER_BRANCH: stable
-  RUNNER_VER: "9.0"
+  RUNNER_VER: "10.0"
 
 jobs:
   build-and-push-images:
