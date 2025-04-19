@@ -36,6 +36,8 @@ set_xorg_params() {
     modeline_values="38.22 800 832 912 1024 600 601 604 622"
   elif [[ "$width" -eq 1024 ]] && [[ "$height" -eq 768 ]]; then
     modeline_values="64.11 1024 1080 1184 1344 768 769 772 795"
+  elif [[ "$width" -eq 1280 ]] && [[ "$height" -eq 960 ]]; then
+    modeline_values="102.10 1280 1360 1496 1712 960 961 964 994"
   elif [[ "$width" -eq 1920 ]] && [[ "$height" -eq 1080 ]]; then
     modeline_values="172.80 1920 2040 2248 2576 1080 1081 1084 1118"
   else
