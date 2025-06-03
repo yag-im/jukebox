@@ -11,6 +11,8 @@ on:
 env:
   GENESIS_IMAGE: debian:bookworm-slim
   GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.9.0-devel-ubuntu24.04
+  NVIDIA_CUDA_VER_MAJOR: 12
+  NVIDIA_CUDA_VER_MINOR: 9
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   USERNAME: gamer
@@ -83,6 +85,8 @@ jobs:
         run: |
           if [[ "${{ matrix.video_enc }}" == "gpu-nvidia" ]]; then
             echo "GENESIS_IMAGE=${{ env.GENESIS_IMAGE_NVIDIA }}" >> $GITHUB_ENV
+            echo "CUDA_VER_MAJOR=${{ env.NVIDIA_CUDA_VER_MAJOR }}" >> $GITHUB_ENV
+            echo "CUDA_VER_MINOR=${{ env.NVIDIA_CUDA_VER_MINOR }}" >> $GITHUB_ENV
           fi
       - name: Build and push Docker image
         id: push
@@ -93,6 +97,8 @@ jobs:
             USERNAME=${{ env.USERNAME }}
             VIDEO_ENC=${{ matrix.video_enc }}
             WINDOW_SYSTEM=${{ matrix.window_system }}
+            ${{ matrix.video_enc == 'gpu-nvidia' && format('CUDA_VER_MAJOR={0}', env.CUDA_VER_MAJOR) || '' }}
+            ${{ matrix.video_enc == 'gpu-nvidia' && format('CUDA_VER_MINOR={0}', env.CUDA_VER_MINOR) || '' }}
           context: ./runners/base
           file: ./runners/base/${{ matrix.window_system }}/${{ matrix.video_enc }}/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
