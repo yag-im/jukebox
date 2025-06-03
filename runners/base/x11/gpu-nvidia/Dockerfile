@@ -121,6 +121,6 @@ ENV USER_UID=$USER_UID
 # without modified LD_LIBRARY_PATH, pipeline fails with: 
 # libcuda.so.1: cannot open shared object file: No such file or directory
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-${CUDA_VER_MAJOR}.${CUDA_VER_MINOR}/compat
-RUN ln -s /usr/local/cuda/lib64/libnvrtc.so.${CUDA_VER_MAJOR} /usr/local/cuda/lib64/libnvrtc.so
+#RUN ln -s /usr/local/cuda/lib64/libnvrtc.so.${CUDA_VER_MAJOR} /usr/local/cuda/lib64/libnvrtc.so
 
 ENTRYPOINT ["/etc/init.d/init.sh"]
