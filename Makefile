@@ -17,9 +17,9 @@ DOCKER_NETWORK := host
 RND_PREFIX := $(shell LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 10)
 
 ifeq ($(VIDEO_ENC),gpu-nvidia)
-    DOCKER_GENESIS_IMAGE := $(DOCKER_GENESIS_IMAGE_NVIDIA)
-	OS_TYPE := $(OS_TYPE_NVIDIA)
-	OS_VER := $(OS_VER_NVIDIA)
+    DOCKER_GENESIS_IMAGE := $(NVIDIA_DOCKER_GENESIS_IMAGE)
+	OS_TYPE := $(NVIDIA_OS_TYPE)
+	OS_VER := $(NVIDIA_OS_VER_NAME)
 endif
 
 .PHONY: help
@@ -28,6 +28,14 @@ help: ## This help
 
 .PHONY: build-base 
 build-base: ## Build base jukebox image
+	@if [ "$(VIDEO_ENC)" = "gpu-nvidia" ]; then \
+		EXTRA_ARGS="\
+			--build-arg CUDA_VER_MAJOR=$(NVIDIA_CUDA_VER_MAJOR) \
+			--build-arg CUDA_VER_MINOR=$(NVIDIA_CUDA_VER_MINOR) \
+		"; \
+	else \
+		EXTRA_ARGS=""; \
+	fi; \
 	docker build \
 		-t $(DOCKER_BASE_IMAGE_TAG) \
 		--progress plain \
@@ -36,6 +44,7 @@ build-base: ## Build base jukebox image
 		--build-arg VIDEO_ENC=$(VIDEO_ENC) \
 		--build-arg WINDOW_SYSTEM=$(WINDOW_SYSTEM) \
 		--build-arg STREAMD_LOG_LEVEL=$(STREAMD_LOG_LEVEL) \
+		$$EXTRA_ARGS \
 		-f runners/base/$(WINDOW_SYSTEM)/$(VIDEO_ENC)/Dockerfile \
 		runners/base
 

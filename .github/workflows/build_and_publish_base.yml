@@ -10,7 +10,7 @@ on:
 
 env:
   GENESIS_IMAGE: debian:bookworm-slim
-  GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.6.3-devel-ubuntu24.04
+  GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.9.0-devel-ubuntu24.04
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   USERNAME: gamer
