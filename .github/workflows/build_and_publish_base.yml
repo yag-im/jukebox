@@ -10,7 +10,7 @@ on:
 
 env:
   GENESIS_IMAGE: debian:bookworm-slim
-  GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.9.0-devel-ubuntu24.04
+  GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.9.0-runtime-ubuntu24.04
   NVIDIA_CUDA_VER_MAJOR: 12
   NVIDIA_CUDA_VER_MINOR: 9
   REGISTRY: ghcr.io
