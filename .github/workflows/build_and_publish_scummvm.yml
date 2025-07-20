@@ -15,7 +15,7 @@ env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   RUNNER: scummvm
-  RUNNER_VER: "2.9.0"
+  RUNNER_VER: "2.9.1"
 
 jobs:
   build-and-push-images:
