@@ -25,10 +25,12 @@ set_xorg_params() {
   # https://arachnoid.com/modelines/
   local modeline_values=""
 
-  # 320x200 is not supported by Xorg?
+  # TODO: why 320x200 is not supported by Xorg?
   #if [[ "$width" -eq 320 ]] && [[ "$height" -eq 200 ]]; then
   #  modeline_values="4.19 320 304 328 336 200 201 204 208"
-  if [[ "$width" -eq 640 ]] && [[ "$height" -eq 400 ]]; then
+  if [[ "$width" -eq 640 ]] && [[ "$height" -eq 350 ]]; then # Dark Seed
+    modeline_values="16.73 640 640 704 768 350 351 354 363 -HSync +Vsync"
+  elif [[ "$width" -eq 640 ]] && [[ "$height" -eq 400 ]]; then
     modeline_values="19.52 640 648 712 784 400 401 404 415"
   elif [[ "$width" -eq 640 ]] && [[ "$height" -eq 480 ]]; then
     modeline_values="23.86 640 656 720 800 480 481 484 497"
