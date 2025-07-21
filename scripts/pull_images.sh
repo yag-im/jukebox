@@ -14,10 +14,6 @@ pull_docker_images() {
         && dangling=\$(docker images -f \"dangling=true\" -q) && [ -n \"\$dangling\" ] && docker rmi \$dangling || echo \"No dangling images to remove.\""
 }
 
-pull_local_all() {
-    pull_docker_images
-}
-
 pull_local_mk_all() {
     # note: vagrant VM nodes support only cpu encoder
     VIDEO_ENC=cpu
