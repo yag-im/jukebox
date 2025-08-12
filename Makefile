@@ -10,6 +10,7 @@ DOCKER_BASE_IMAGE_TAG := $(DOCKER_BASE_IMAGE_PREFIX)_base
 DOCKER_DOSBOX_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox:$(DOSBOX_VER)
 DOCKER_DOSBOX_STAGING_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox-staging:$(DOSBOX_STAGING_VER)
 DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox-x:$(DOSBOX_X_VER)
+DOCKER_RETROARCH_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_retroarch:$(RETROARCH_VER)
 DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_scummvm:$(SCUMMVM_VER)
 DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_wine:$(WINE_VER)
 
@@ -108,6 +109,18 @@ build-wine: ## Build wine jukebox image
 		-f runners/wine/Dockerfile \
 		runners/wine
 
+.PHONY: build-retroarch
+build-retroarch: ## Build retroarch jukebox image
+	$(MAKE) build-base \
+	&& docker build \
+		-t $(DOCKER_RETROARCH_IMAGE) \
+		--progress plain \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
+		--build-arg RUNNER_VER=$(RETROARCH_VER) \
+		--build-arg USERNAME=$(USERNAME) \
+		-f runners/retroarch/Dockerfile \
+		runners/retroarch
+
 .PHONY: build-all ## Build all jukebox images
 build-all:
 	$(MAKE) build-wine
@@ -115,6 +128,7 @@ build-all:
 	$(MAKE) build-dosbox
 	$(MAKE) build-dosbox-x
 	$(MAKE) build-dosbox-staging
+	$(MAKE) build-retroarch
 
 .PHONY: run-jukebox
 run-jukebox:
@@ -199,4 +213,11 @@ run-wine: ## Run wine jukebox
 	$(MAKE) run-jukebox \
 		DOCKER_RUN_NAME=$(DOCKER_WINE_IMAGE)-$(STREAM_WORKER_NUM) \
 		DOCKER_IMAGE=$(DOCKER_WINE_IMAGE) \
+		YAG_VOLUME=$(YAG_VOLUME)
+
+.PHONY: run-retroarch
+run-wine: ## Run retroarch jukebox
+	$(MAKE) run-retroarch \
+		DOCKER_RUN_NAME=$(DOCKER_RETROARCH_IMAGE)-$(STREAM_WORKER_NUM) \
+		DOCKER_IMAGE=$(DOCKER_RETROARCH_IMAGE) \
 		YAG_VOLUME=$(YAG_VOLUME)

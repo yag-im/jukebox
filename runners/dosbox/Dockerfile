@@ -14,9 +14,9 @@ ARG RUNNER_VER_DEBIAN_PREFIX=-4+b1
 RUN apt-get update
 RUN apt list -a dosbox
 
-# TODO: moving "+b1" prefix into the RUNNER_VER definition breaks docker tag naming rules (plus is a restricted character)
+# TODO: moving "+b1" prefix into the RUNNER_VER definition breaks docker tag naming rules ("plus" is a restricted character)
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \        
+    && apt-get install -y --no-install-recommends \
         dosbox=${RUNNER_VER}$(if [ "${OS_TYPE}" = "ubuntu" ]; then echo "${RUNNER_VER_UBUNTU_PREFIX}"; elif [ "${OS_TYPE}" = "debian" ]; then echo "${RUNNER_VER_DEBIAN_PREFIX}"; fi)
 RUN rm -rf /var/lib/apt/lists/*
 

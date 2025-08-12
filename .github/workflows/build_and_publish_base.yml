@@ -160,3 +160,13 @@ jobs:
       packages: write
       attestations: write
       id-token: write
+
+  call-retroarch-build:
+    needs: build-and-push-images
+    uses: ./.github/workflows/build_and_publish_retroarch.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
