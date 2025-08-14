@@ -9,7 +9,7 @@ on:
       - .github/workflows/build_and_publish_base.yml
 
 env:
-  GENESIS_IMAGE: debian:bookworm-slim
+  GENESIS_IMAGE: debian:trixie-slim
   GENESIS_IMAGE_NVIDIA: nvidia/cuda:12.9.0-runtime-ubuntu24.04
   NVIDIA_CUDA_VER_MAJOR: 12
   NVIDIA_CUDA_VER_MINOR: 9

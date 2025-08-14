@@ -112,6 +112,7 @@ COPY files/init.sh /etc/init.d/init.sh
 ENV USERNAME=$USERNAME
 ENV USER_UID=$USER_UID
 
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
 ENTRYPOINT ["/etc/init.d/init.sh"]
 
 # apt install intel-gpu-tools

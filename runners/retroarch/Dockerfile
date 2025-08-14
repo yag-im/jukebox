@@ -23,10 +23,10 @@ WORKDIR ${SRC_DIR}
 RUN mkdir -p ${BUILD_DIR}
 
 RUN wget https://buildbot.libretro.com/stable/${RUNNER_VER}/linux/x86_64/RetroArch.7z \
-    && 7zz x RetroArch.7z -o${BUILD_DIR}
+    && 7z x RetroArch.7z -o${BUILD_DIR}
 
 RUN wget https://buildbot.libretro.com/stable/${RUNNER_VER}/linux/x86_64/RetroArch_cores.7z \
-    && 7zz x RetroArch_cores.7z -o${BUILD_DIR}
+    && 7z x RetroArch_cores.7z -o${BUILD_DIR}
 
 # Philips CD-I origin: https://archive.org/download/RetroarchSystemFiles/Retroarch-System/
 RUN wget "https://cdn.yag.im/runners/src/retroarch/Philips+-+CDi+(SAME+CDi).zip" \
@@ -46,17 +46,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        vim
+        libgpg-error0
 RUN rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config /home/${USERNAME}/.config
 COPY --from=builder ${BUILD_DIR}/RetroArch-Linux-x86_64/squashfs-root /opt/retroarch
 COPY files/retroarch.cfg /home/${USERNAME}/.config/retroarch/retroarch.cfg
 
-# SAME_CDI.opt has "same_cdi_mouse_enable" enabled and input_exit_emulator set to "nul"
+# SAME_CDI
+# SAME_CDI.opt: "same_cdi_mouse_enable" enabled and "input_exit_emulator" set to "nul"
 COPY files/same_cdi/SAME_CDI.opt /home/${USERNAME}/.config/retroarch/config/SAME_CDI/SAME_CDI.opt
 COPY files/same_cdi/cdimono1.cfg /home/${USERNAME}/.config/retroarch/saves/SAME_CDI/same_cdi/cfg/cdimono1.cfg
-# disabling ESC and TAB hot keys in default.cfg
+# default.cfg: disabling ESC and TAB hot keys
 COPY files/same_cdi/default.cfg /home/${USERNAME}/.config/retroarch/saves/SAME_CDI/same_cdi/cfg/default.cfg
 
 RUN ln -s /opt/retroarch/AppRun /usr/bin/retroarch

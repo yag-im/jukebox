@@ -17,8 +17,8 @@ fi
 # pango: required for time/text overlays
 
 BUILD_BIN_PREFIX=$1
-GSTREAMER_VERSION=1.24.10
-GST_PLUGINS_RS_VERSION=add_send_webrtc_stats
+GSTREAMER_VERSION=1.26.5
+GST_PLUGINS_RS_VERSION=add_send_webrtc_stats_20250813
 
 apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -40,6 +40,9 @@ git clone --depth=1 --single-branch --branch "$GSTREAMER_VERSION"  https://githu
 # fix 100ms delay A/V sync issue in chrome
 patch gstreamer/subprojects/gst-plugins-good/gst/rtpmanager/rtpsource.c patches/rtpsource.c.patch
 git clone --depth=1 --single-branch --branch "$GST_PLUGINS_RS_VERSION"  https://gitlab.freedesktop.org/rayrapetyan/gst-plugins-rs.git gstreamer/subprojects/gst-plugins-rs
+
+# custom libva dev headers (from build_gpu_intel_deps.sh) for va plugin
+cp -r "$BUILD_DIR/include/va" "/usr/local/include"
 
 cd gstreamer
 

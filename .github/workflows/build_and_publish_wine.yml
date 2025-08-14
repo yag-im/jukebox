@@ -11,7 +11,7 @@ on:
 
 env:
   OS_TYPE: debian
-  OS_VER: bookworm
+  OS_VER: trixie
   OS_TYPE_NVIDIA: ubuntu
   OS_VER_NVIDIA: noble
   REGISTRY: ghcr.io

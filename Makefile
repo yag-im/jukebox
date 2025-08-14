@@ -169,8 +169,8 @@ run-jukebox:
 			--network=$(DOCKER_NETWORK) \
 			--env-file=envs/run.env \
 			--env-file=envs/secret.env \
-			--device=/dev/dri/renderD129 \
-			--device=/dev/dri/card1 \
+			--device=/dev/dri/renderD128 \
+			--device=/dev/dri/card0 \
 			--device=/dev/snd/seq \
 			--shm-size="2g" \
 			--cpuset-cpus="$(STREAM_WORKER_NUM)" \
