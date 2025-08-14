@@ -41,9 +41,6 @@ git clone --depth=1 --single-branch --branch "$GSTREAMER_VERSION"  https://githu
 patch gstreamer/subprojects/gst-plugins-good/gst/rtpmanager/rtpsource.c patches/rtpsource.c.patch
 git clone --depth=1 --single-branch --branch "$GST_PLUGINS_RS_VERSION"  https://gitlab.freedesktop.org/rayrapetyan/gst-plugins-rs.git gstreamer/subprojects/gst-plugins-rs
 
-# custom libva dev headers (from build_gpu_intel_deps.sh) for va plugin
-cp -r "$BUILD_DIR/include/va" "/usr/local/include"
-
 cd gstreamer
 
 NVIDIA_OPTION=$([[ "$@" =~ "--gpu-nvidia" ]] && echo "-Dgst-plugins-bad:nvcodec=enabled" || echo "")

@@ -74,6 +74,9 @@ mkdir libva \
     && ninja -C build \
     && meson install -C build
 
+# custom libva dev headers (for e.g. gstreamers' va plugin build)
+cp -r "$BUILD_DIR/include/va" "/usr/local/include"
+
 cd "$SRC_DIR"
 
 # dep: intel-media-driver
