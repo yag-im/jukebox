@@ -61,8 +61,8 @@ ARG USER_GID=$USER_UID
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME") \
-    && echo "deb http://deb.debian.org/debian/ $CODENAME contrib non-free non-free-firmware" \
+RUN export OS_RELEASE_VER=$(. /etc/os-release && echo "$VERSION_CODENAME") \
+    && echo "deb http://deb.debian.org/debian/ $OS_RELEASE_VER contrib non-free non-free-firmware" \
     > /etc/apt/sources.list.d/non-free.list
 
 # warning: firefox depends on intel-media-va-driver which replaces iHD driver and crashes the pipeline

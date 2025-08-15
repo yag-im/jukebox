@@ -13,8 +13,8 @@ ARG SRC_DIR=/tmp/src
 ENV DEBIAN_FRONTEND=noninteractive
 
 # deps: https://wiki.scummvm.org/index.php?title=Compiling_ScummVM/GCC
-RUN OS_RELEASE_ID=$(source /etc/os-release && echo "$ID") \
-    apt-get update \
+RUN export OS_RELEASE_ID=$( . /etc/os-release && echo "$ID") \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         automake \
         build-essential \
@@ -42,8 +42,8 @@ ARG BUILD_DIR
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN OS_RELEASE_ID=$(source /etc/os-release && echo "$ID") \
-    apt-get update \
+RUN export OS_RELEASE_ID=$( . /etc/os-release && echo "$ID") \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         nasm libsdl2-dev libsdl2-net-dev liba52-dev libmpeg2-4-dev libogg-dev libvorbis-dev libflac-dev libmad0-dev \
         libpng-dev libtheora-dev libfaad-dev libfluidsynth-dev libfreetype6-dev zlib1g-dev libfribidi-dev libgif-dev \

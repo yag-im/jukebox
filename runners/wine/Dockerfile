@@ -135,18 +135,18 @@ RUN apt-get update \
 
 # we need this block to just install all runtime deps; we're replacing all wine binaries afterward.
 # styrlitz requires avi player (gstreamer1.0-plugins-good:i386) with intel indeo codec (gstreamer1.0-libav:i386)
-RUN OS_RELEASE_ID=$(source /etc/os-release && echo "$ID") \
-    OS_RELEASE_VER=$(source /etc/os-release && echo "$VERSION_CODENAME") \
-    dpkg --add-architecture i386 \
+RUN export OS_RELEASE_ID=$( . /etc/os-release && echo "$ID") \
+    export OS_RELEASE_VER=$( . /etc/os-release && echo "$VERSION_CODENAME") \
+    && dpkg --add-architecture i386 \
     && mkdir -pm755 /etc/apt/keyrings \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/${OS_RELEASE_ID}/dists/${OS_RELEASE_VER}/winehq-${OS_RELEASE_VER}.sources \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/$OS_RELEASE_ID/dists/$OS_RELEASE_VER/winehq-$OS_RELEASE_VER.sources \
     && apt-get update \
     && apt-get install --install-recommends -y \
         gstreamer1.0-plugins-good:i386 \
         gstreamer1.0-libav:i386 \
         wine-${RUNNER_BRANCH} \
-        $(if [ "${OS_RELEASE_ID}" = "debian" ]; then echo "winehq-stable"; fi) \
+        $(if [ "$OS_RELEASE_ID" = "debian" ]; then echo "winehq-stable"; fi) \
     && rm -rf /var/lib/apt/lists/*
 
 # install wine32 (should go first) and wine64
