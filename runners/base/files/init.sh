@@ -55,7 +55,6 @@ export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$USER_UID/dbus
 
 # intel
 export LIBVA_DRIVER_NAME=iHD
-export LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
 
 /home/${USERNAME}/run_ws.sh
 

@@ -49,3 +49,25 @@ gstreamer fix (-100ms of latency in a google chrome, disable sync of the audio/v
 
   //t_rtp = src->last_rtptime;
   t_rtp = 1307;
+
+
+# Rollback old docker images
+
+  docker pull ghcr.io/yag-im/jukebox/x11_gpu-intel_wine@sha256:750ae73211a06308936369893b6122e4250113b7d52868e38007add3da97dba0
+  docker tag ghcr.io/yag-im/jukebox/x11_gpu-intel_wine@sha256:750ae73211a06308936369893b6122e4250113b7d52868e38007add3da97dba0 ghcr.io/yag-im/jukebox/x11_gpu-intel_wine:10.0
+
+  docker pull ghcr.io/yag-im/jukebox/x11_gpu-intel_scummvm@sha256:846f095906e44a652f539b47a088071ffa5974faa38c9722c464e72438f2e808
+  docker tag ghcr.io/yag-im/jukebox/x11_gpu-intel_scummvm@sha256:846f095906e44a652f539b47a088071ffa5974faa38c9722c464e72438f2e808 ghcr.io/yag-im/jukebox/x11_gpu-intel_scummvm:2.9.1
+
+  docker pull ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-x@sha256:6dd2a7224a9a2f55c921742b38d40834e34ae68708babadcb075f8c86d46ba53
+  docker tag ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-x@sha256:6dd2a7224a9a2f55c921742b38d40834e34ae68708babadcb075f8c86d46ba53 ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-x:2024.12.04
+
+  docker pull ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-staging@sha256:0433283376a060fe67ba104c60b2b480e673fa889fa9f434130c7c269d18c9f4
+  docker tag ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-staging@sha256:0433283376a060fe67ba104c60b2b480e673fa889fa9f434130c7c269d18c9f4 ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox-staging:0.82.0
+
+  docker pull ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox@sha256:4ca610598e79f146a48f197ecb9ae676c6f0b1c07c403ffdf1ca704fe200c3e3
+  docker tag ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox@sha256:4ca610598e79f146a48f197ecb9ae676c6f0b1c07c403ffdf1ca704fe200c3e3 ghcr.io/yag-im/jukebox/x11_gpu-intel_dosbox:0.74-3
+
+  ...
+
+  dangling=$(docker images -f "dangling=true" -q) && [ -n "$dangling" ] && docker rmi $dangling || echo "No dangling images to remove."

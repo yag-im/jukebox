@@ -30,7 +30,8 @@ RUN apt-get update \
         libxtst-dev \
         libxfixes-dev \
         linux-perf \
-        pkg-config
+        pkg-config \
+        libvpl-dev libva-dev
 
 WORKDIR $SRC_DIR
 
@@ -39,6 +40,7 @@ COPY files/patches ./patches
 COPY files/build_gpu_intel_deps.sh .
 RUN ./build_gpu_intel_deps.sh ${WINDOW_SYSTEM}
 
+# COPY deps/gstreamer gstreamer
 COPY files/build_gstreamer.sh .
 RUN ./build_gstreamer.sh ${BUILD_DIR} --${VIDEO_ENC}
 
@@ -59,6 +61,10 @@ ARG USER_GID=$USER_UID
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME") \
+    && echo "deb http://deb.debian.org/debian/ $CODENAME contrib non-free non-free-firmware" \
+    > /etc/apt/sources.list.d/non-free.list
+
 # warning: firefox depends on intel-media-va-driver which replaces iHD driver and crashes the pipeline
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -72,6 +78,7 @@ RUN apt-get update \
         libsrtp2-dev \
         fluidsynth fluid-soundfont-gm \
         # firefox-esr intel-media-va-driver- \
+        intel-media-va-driver-non-free libvpl2 libva2 vainfo libva-x11-2 libmfx-gen1.2 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 

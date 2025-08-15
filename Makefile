@@ -216,7 +216,7 @@ run-wine: ## Run wine jukebox
 		YAG_VOLUME=$(YAG_VOLUME)
 
 .PHONY: run-retroarch
-run-wine: ## Run retroarch jukebox
+run-retroarch: ## Run retroarch jukebox
 	$(MAKE) run-retroarch \
 		DOCKER_RUN_NAME=$(DOCKER_RETROARCH_IMAGE)-$(STREAM_WORKER_NUM) \
 		DOCKER_IMAGE=$(DOCKER_RETROARCH_IMAGE) \
