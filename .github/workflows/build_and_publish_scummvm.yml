@@ -10,8 +10,6 @@ on:
   workflow_call:
 
 env:
-  OS_TYPE: debian
-  OS_TYPE_NVIDIA: ubuntu
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   RUNNER: scummvm
@@ -50,19 +48,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}
           tags: |
             type=raw,value=${{ env.RUNNER_VER }},enable={{is_default_branch}}
-      - name: Set base image
-        id: set-base-image
-        run: |
-          if [[ "${{ matrix.video_enc }}" == "gpu-nvidia" ]]; then
-            echo "OS_TYPE=${{ env.OS_TYPE_NVIDIA }}" >> $GITHUB_ENV
-          fi
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           build-args: |
             BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
-            OS_TYPE=${{ env.OS_TYPE }}
             RUNNER_VER=${{ env.RUNNER_VER }}
           context: ./runners/${{ env.RUNNER }}
           labels: ${{ steps.meta.outputs.labels }}

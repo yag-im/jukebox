@@ -19,8 +19,6 @@ RND_PREFIX := $(shell LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 10)
 
 ifeq ($(VIDEO_ENC),gpu-nvidia)
     DOCKER_GENESIS_IMAGE := $(NVIDIA_DOCKER_GENESIS_IMAGE)
-	OS_TYPE := $(NVIDIA_OS_TYPE)
-	OS_VER := $(NVIDIA_OS_VER_NAME)
 endif
 
 .PHONY: help
@@ -78,7 +76,6 @@ build-dosbox: ## Build dosbox jukebox image
 		-t $(DOCKER_DOSBOX_IMAGE) \
 		--progress plain \
 		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
-		--build-arg OS_TYPE=$(OS_TYPE) \
 		--build-arg RUNNER_VER=$(DOSBOX_VER) \
 		-f runners/dosbox/Dockerfile \
 		runners/dosbox
@@ -90,7 +87,6 @@ build-scummvm: ## Build scummvm jukebox image
 		-t $(DOCKER_SCUMMVM_IMAGE) \
 		--progress plain \
 		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
-		--build-arg OS_TYPE=$(OS_TYPE) \
 		--build-arg RUNNER_VER=$(SCUMMVM_VER) \
 		-f runners/scummvm/Dockerfile \
 		runners/scummvm
@@ -102,8 +98,6 @@ build-wine: ## Build wine jukebox image
 		-t $(DOCKER_WINE_IMAGE) \
 		--progress plain \
 		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
-		--build-arg OS_TYPE=$(OS_TYPE) \
-		--build-arg OS_VER=$(OS_VER) \
 		--build-arg RUNNER_BRANCH=$(WINE_BRANCH) \
 		--build-arg RUNNER_VER=$(WINE_VER) \
 		-f runners/wine/Dockerfile \
