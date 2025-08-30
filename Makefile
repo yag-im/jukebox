@@ -13,6 +13,7 @@ DOCKER_DOSBOX_X_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_dosbox-x:$(DOSBOX_X_VER)
 DOCKER_RETROARCH_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_retroarch:$(RETROARCH_VER)
 DOCKER_SCUMMVM_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_scummvm:$(SCUMMVM_VER)
 DOCKER_WINE_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_wine:$(WINE_VER)
+DOCKER_QEMU_IMAGE := $(DOCKER_BASE_IMAGE_PREFIX)_qemu:$(QEMU_VER)
 
 DOCKER_NETWORK := host
 RND_PREFIX := $(shell LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 10)
@@ -115,6 +116,18 @@ build-retroarch: ## Build retroarch jukebox image
 		-f runners/retroarch/Dockerfile \
 		runners/retroarch
 
+.PHONY: build-qemu
+build-qemu: ## Build qemu jukebox image
+	$(MAKE) build-base \
+	&& docker build \
+		-t $(DOCKER_QEMU_IMAGE) \
+		--progress plain \
+		--build-arg BASE_IMAGE=$(DOCKER_BASE_IMAGE_TAG) \
+		--build-arg RUNNER_VER=$(QEMU_VER) \
+		--build-arg USERNAME=$(USERNAME) \
+		-f runners/qemu/Dockerfile \
+		runners/qemu
+
 .PHONY: build-all ## Build all jukebox images
 build-all:
 	$(MAKE) build-wine
@@ -123,6 +136,7 @@ build-all:
 	$(MAKE) build-dosbox-x
 	$(MAKE) build-dosbox-staging
 	$(MAKE) build-retroarch
+	$(MAKE) build-qemu
 
 .PHONY: run-jukebox
 run-jukebox:
@@ -214,4 +228,11 @@ run-retroarch: ## Run retroarch jukebox
 	$(MAKE) run-retroarch \
 		DOCKER_RUN_NAME=$(DOCKER_RETROARCH_IMAGE)-$(STREAM_WORKER_NUM) \
 		DOCKER_IMAGE=$(DOCKER_RETROARCH_IMAGE) \
+		YAG_VOLUME=$(YAG_VOLUME)
+
+.PHONY: run-qemu
+run-qemu: ## Run qemu jukebox
+	$(MAKE) run-qemu \
+		DOCKER_RUN_NAME=$(DOCKER_QEMU_IMAGE)-$(STREAM_WORKER_NUM) \
+		DOCKER_IMAGE=$(DOCKER_QEMU_IMAGE) \
 		YAG_VOLUME=$(YAG_VOLUME)

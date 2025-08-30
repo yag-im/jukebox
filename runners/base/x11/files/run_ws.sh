@@ -10,6 +10,8 @@ fi
 # this script is called by root through the "su -" which preserves all env vars, including HOME for root, so need to
 # redefine it for USERNAME
 export HOME=/home/${USERNAME}
+# XDG_RUNTIME_DIR is required by PulseAudio when running from qemu
+export XDG_RUNTIME_DIR=/run/user/${USER_UID}
 
 COLOR_BITS=${COLOR_BITS:-24}
 STREAMD_MAX_RESTARTS=3

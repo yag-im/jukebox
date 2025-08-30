@@ -7,37 +7,46 @@ if  [[ $EUID > 0 ]]
   exit
 fi
 
-# change dri devices permissions first
-FILES=$(find /dev/dri -type c -print 2>/dev/null)
-for i in $FILES
-do
-    VIDEO_GID=$(stat -c '%g' "${i}")
-    VIDEO_UID=$(stat -c '%u' "${i}")
-    # check if user matches device
-    if id -u ${USERNAME} | grep -qw "${VIDEO_UID}"; then
-        echo "**** permissions for ${i} are good ****"
-    else
-        # check if group matches and that device has group rw
-        if id -G ${USERNAME} | grep -qw "${VIDEO_GID}" && [ $(stat -c '%A' "${i}" | cut -b 5,6) = "rw" ]; then
-            echo "**** permissions for ${i} are good ****"
-        # check if device needs to be added to video group
-        elif ! id -G ${USERNAME} | grep -qw "${VIDEO_GID}"; then
-            # check if video group needs to be created
-            VIDEO_NAME=$(getent group "${VIDEO_GID}" | awk -F: '{print $1}')
-            if [ -z "${VIDEO_NAME}" ]; then
-                VIDEO_NAME="video$(head /dev/urandom | tr -dc 'a-z0-9' | head -c4)"
-                groupadd "${VIDEO_NAME}"
-                groupmod -g "${VIDEO_GID}" "${VIDEO_NAME}"
-                echo "**** creating video group ${VIDEO_NAME} with id ${VIDEO_GID} ****"
-            fi
-            echo "**** adding ${i} to video group ${VIDEO_NAME} with id ${VIDEO_GID} ****"
-            usermod -a -G "${VIDEO_NAME}" ${USERNAME}
+# change mounted devices permissions first
+DEVICES=$(find /dev/dri -type c -print 2>/dev/null || true)
+[ -c /dev/kvm ] && DEVICES="$DEVICES /dev/kvm"
+
+for i in $DEVICES; do
+    DEV_GID=$(stat -c '%g' "${i}")
+    DEV_UID=$(stat -c '%u' "${i}")
+    DEV_MODE=$(stat -c '%A' "${i}" | cut -b 5,6)
+
+    echo "Checking permissions for ${i}..."
+
+    # check if user matches device owner
+    if id -u "${USERNAME}" | grep -qw "${DEV_UID}"; then
+        echo "**** permissions for ${i} are good (user owns device) ****"
+        continue
+    fi
+
+    # check if group matches and device has group rw
+    if id -G "${USERNAME}" | grep -qw "${DEV_GID}" && [ "${DEV_MODE}" = "rw" ]; then
+        echo "**** permissions for ${i} are good (user in group with rw access) ****"
+        continue
+    fi
+
+    # check if device group exists, create if missing
+    DEV_GROUP=$(getent group "${DEV_GID}" | awk -F: '{print $1}')
+    if ! id -G "${USERNAME}" | grep -qw "${DEV_GID}"; then
+        if [ -z "${DEV_GROUP}" ]; then
+            DEV_GROUP="devgrp$(head /dev/urandom | tr -dc 'a-z0-9' | head -c4)"
+            groupadd "${DEV_GROUP}"
+            groupmod -g "${DEV_GID}" "${DEV_GROUP}"
+            echo "**** creating group ${DEV_GROUP} with id ${DEV_GID} ****"
         fi
-        # check if device has group rw
-        if [ $(stat -c '%A' "${i}" | cut -b 5,6) != "rw" ]; then
-            echo -e "**** The device ${i} does not have group read/write permissions, attempting to fix inside the container. ****"
-            chmod g+rw "${i}"
-        fi
+        echo "**** adding ${USERNAME} to group ${DEV_GROUP} with id ${DEV_GID} ****"
+        usermod -a -G "${DEV_GROUP}" "${USERNAME}"
+    fi
+
+    # ensure group has rw permissions
+    if [ "${DEV_MODE}" != "rw" ]; then
+        echo "**** ${i} missing group rw permissions, fixing... ****"
+        chmod g+rw "${i}"
     fi
 done
 
