@@ -6,6 +6,7 @@ set -o allexport
 set +o allexport
 
 pull_docker_images() {
+    # TODO: drop hardcoded legacy versions after ports upgrade
     echo "docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox:${DOSBOX_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:${DOSBOX_X_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-staging:${DOSBOX_STAGING_VER} \
@@ -13,6 +14,8 @@ pull_docker_images() {
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_retroarch:${RETROARCH_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:9.0 \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:2.9.0 \
         && dangling=\$(docker images -f \"dangling=true\" -q) && [ -n \"\$dangling\" ] && docker rmi \$dangling || echo \"No dangling images to remove.\""
 }
 
