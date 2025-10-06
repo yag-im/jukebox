@@ -47,8 +47,9 @@ RUN ./build_gstreamer.sh ${BUILD_DIR} --${VIDEO_ENC}
 # streamd will try to find gstreamer package while building
 RUN cp -r $BUILD_DIR/* /usr
 
+#don't forget: cp -r /ara/devel/acme/yag/streamd /ara/devel/acme/yag/jukebox/runners/base/deps
+#COPY deps/streamd streamd
 RUN git clone --depth 1 --single-branch --branch main https://github.com/yag-im/streamd.git
-# COPY deps/streamd streamd
 RUN cd streamd && ./build.sh --window-system ${WINDOW_SYSTEM} --video-enc ${VIDEO_ENC} --build-dir ${BUILD_DIR} --log-level ${STREAMD_LOG_LEVEL}
 
 # runner
