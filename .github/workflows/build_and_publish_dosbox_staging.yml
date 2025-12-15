@@ -13,7 +13,7 @@ env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   RUNNER: dosbox-staging
-  RUNNER_VER: "0.82.0"
+  RUNNER_VER: "0.82.2"
 
 jobs:
   build-and-push-images:
