@@ -28,12 +28,14 @@ RUN git clone --depth 1 --single-branch --branch v${RUNNER_VER} https://github.c
 
 RUN pip install meson --break-system-packages
 
+# with opengl dosbox crashes with: SDL: could not initialize video: Couldn't find matching GLX visual
 RUN cd ./dosbox-staging \
     && meson setup \
         -Dbuildtype=release \
         -Dprefix=$BUILD_DIR \
         -Duse_mt32emu=false \
-        -Duse_zlib_ng=false \
+        -Duse_zlib_ng=native \
+        -Duse_opengl=false \
         build \
     && ninja -C build \
     && meson install -C build
