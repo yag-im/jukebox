@@ -16,6 +16,7 @@ pull_docker_images() {
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:9.0 \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:2.9.0 \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:2024.12.04 \
         && dangling=\$(docker images -f \"dangling=true\" -q) && [ -n \"\$dangling\" ] && docker rmi \$dangling || echo \"No dangling images to remove.\""
 }
 
