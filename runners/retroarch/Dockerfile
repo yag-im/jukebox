@@ -13,10 +13,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        7zip \
-        ca-certificates \
-        unzip \
-        wget
+    7zip \
+    ca-certificates \
+    unzip \
+    wget
 RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${SRC_DIR}
@@ -46,12 +46,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libgpg-error0
+    libgpg-error0
 RUN rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config /home/${USERNAME}/.config
 COPY --from=builder ${BUILD_DIR}/RetroArch-Linux-x86_64/squashfs-root /opt/retroarch
 COPY files/retroarch.cfg /home/${USERNAME}/.config/retroarch/retroarch.cfg
+
+# Genesis Plus GX
+# disable auto game focus so keyboard-to-RetroPad mapping works (genesis_plus_gx doesn't handle raw keyboard input)
+COPY ["files/genesis_plus_gx/Genesis Plus GX.cfg", "/home/${USERNAME}/.config/retroarch/config/Genesis Plus GX/Genesis Plus GX.cfg"]
 
 # SAME_CDI
 # SAME_CDI.opt: "same_cdi_mouse_enable" enabled and "input_exit_emulator" set to "nul"

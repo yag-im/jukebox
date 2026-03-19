@@ -104,8 +104,8 @@ function run_streamd {
       break
     fi
   done
-  trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
-  exit 0
+  # streamd exited successfully, kill the app so the main wait unblocks
+  kill $run_app_pid 2>/dev/null || true
 }
 
 sleep 1
