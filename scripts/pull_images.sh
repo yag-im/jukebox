@@ -71,3 +71,8 @@ case $1 in
         exit 1
         ;;
 esac
+
+echo ""
+echo "WARNING: Verify no dangling (untagged) docker images remain on the nodes!"
+echo "Dangling images cause jukeboxsvc to return an empty/outdated cluster state, which makes jobsvc kill all active sessions every 30 seconds."
+echo "Run 'docker images -f dangling=true' on each node to check."
