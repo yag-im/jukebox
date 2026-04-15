@@ -29,6 +29,10 @@ RUN rm -rf /var/lib/apt/lists/*
 WORKDIR ${SRC_DIR}
 
 RUN git clone --depth 1 --single-branch --branch v${RUNNER_VER} https://github.com/scummvm/scummvm.git
+
+COPY patches/*.patch .
+RUN patch ./scummvm/engines/gob/detection/tables_adibou2.h tables_adibou2.h.patch
+
 RUN cd ./scummvm \
     && ./configure --enable-all-engines \
     && make -j${NUM_BUILD_WORKERS} \

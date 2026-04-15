@@ -1,0 +1,68 @@
+--- tables_adibou2.h.orig	2026-04-13 19:54:08.263017937 -0700
++++ tables_adibou2.h	2026-04-14 17:56:34.263804832 -0700
+@@ -383,6 +383,21 @@
+ 	0, 0, 0
+ },
+ 
++{
++	{
++		"adibou2readcount45",
++		"",
++		AD_ENTRY2s("intro_ap.stk", "81883a52e24b0a8ffa2129051766ab82", 41033884,
++				   "appli_01.vmd", "e80645ef7d593598fc30987cbac9cf93", 54811),
++		EN_GRB,
++		kPlatformWindows,
++		ADGF_ADDON,
++		GUIO0()
++	},
++	kFeatures640x480,
++	0, 0, 0
++},
++
+ // -- Add-ons : Read/Count 6-7 years --
+ {
+ 	{
+@@ -521,6 +536,22 @@
+ 	0, 0, 0
+ },
+ 
++{
++	{
++		"adibou2sciences",
++		"",
++		AD_ENTRY3s("intro_ap.stk", "d41d8cd98f00b204e9800998ecf8427e", 0,
++				   "FICHES.ITK", "2a704840f883b908f444f5215ab05e72", 44441600,
++				   "APPBOFR1.ITK", "2c081eacef988ad5134bb345c2168245", 126068736),
++		FR_CAN,
++		kPlatformWindows,
++		ADGF_ADDON,
++		GUIO0()
++	},
++	kFeatures640x480,
++	0, 0, 0
++},
++
+ // -- Add-ons : "Anglais" (English for non-native speakers) --
+ {
+ 	{
+@@ -562,6 +593,20 @@
+ 		kPlatformWindows,
+ 		ADGF_ADDON | ADGF_UNSTABLE,
+ 		GUIO0()
++	},
++	kFeatures640x480,
++	0, 0, 0
++},
++{
++	{
++		"adibou2music",
++		"",
++		AD_ENTRY2s("intro_ap.stk", "2147748e04ac11bd7155779e1456be07", 1631068,
++				   "MUZIKO.ITK", "4f7b067477da0af7a9b9c4a9aaf24589", 43921408),
++		EN_GRB,
++		kPlatformWindows,
++		ADGF_ADDON | ADGF_UNSTABLE,
++		GUIO0()
+ 	},
+ 	kFeatures640x480,
+ 	0, 0, 0
