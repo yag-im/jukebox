@@ -46,7 +46,7 @@ jobs:
         window_system:
           - x11
         video_enc:
-          - cpu
+          #- cpu
           - gpu-intel
           - gpu-nvidia
     permissions:

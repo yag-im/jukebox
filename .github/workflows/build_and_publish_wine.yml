@@ -14,7 +14,6 @@ env:
   REPO_NAME: ${{ github.repository }}
   RUNNER: wine
   RUNNER_BRANCH: stable
-  RUNNER_VER: "11.0"
 
 jobs:
   build-and-push-images:
@@ -25,9 +24,13 @@ jobs:
         window_system:
           - x11
         video_enc:
-          - cpu
+          #- cpu
           - gpu-intel
           - gpu-nvidia
+        runner_ver:
+          - "11.0"
+          - "10.0"
+          - "9.0"
     permissions:
       contents: read
       packages: write
@@ -48,7 +51,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}
           tags: |
-            type=raw,value=${{ env.RUNNER_VER }},enable={{is_default_branch}}
+            type=raw,value=${{ matrix.runner_ver }},enable={{is_default_branch}}
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
@@ -56,7 +59,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
             RUNNER_BRANCH=${{ env.RUNNER_BRANCH }}
-            RUNNER_VER=${{ env.RUNNER_VER }}
+            RUNNER_VER=${{ matrix.runner_ver }}
           context: ./runners/${{ env.RUNNER }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true

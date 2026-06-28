@@ -13,7 +13,6 @@ env:
   REGISTRY: ghcr.io
   REPO_NAME: ${{ github.repository }}
   RUNNER: dosbox
-  RUNNER_VER: "0.74-3"
 
 jobs:
   build-and-push-images:
@@ -24,9 +23,11 @@ jobs:
         window_system:
           - x11
         video_enc:
-          - cpu
+          #- cpu
           - gpu-intel
           - gpu-nvidia
+        runner_ver:
+          - "0.74-3"
     permissions:
       contents: read
       packages: write
@@ -47,14 +48,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_${{ env.RUNNER }}
           tags: |
-            type=raw,value=${{ env.RUNNER_VER }},enable={{is_default_branch}}
+            type=raw,value=${{ matrix.runner_ver }},enable={{is_default_branch}}
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           build-args: |
             BASE_IMAGE=${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ matrix.window_system }}_${{ matrix.video_enc }}_base:latest
-            RUNNER_VER=${{ env.RUNNER_VER }}
+            RUNNER_VER=${{ matrix.runner_ver }}
           context: ./runners/${{ env.RUNNER }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
