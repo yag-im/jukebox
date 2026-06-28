@@ -31,7 +31,7 @@ WORKDIR ${SRC_DIR}
 RUN git clone --depth 1 --single-branch --branch v${RUNNER_VER} https://github.com/scummvm/scummvm.git
 
 COPY patches/*.patch .
-RUN patch ./scummvm/engines/gob/detection/tables_adibou2.h tables_adibou2.h.patch
+RUN if [ "${RUNNER_VER}" = "2026.2.0" ]; then patch ./scummvm/engines/gob/detection/tables_adibou2.h tables_adibou2.h.patch; fi
 
 RUN cd ./scummvm \
     && ./configure --enable-all-engines \
