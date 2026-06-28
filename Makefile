@@ -28,14 +28,6 @@ help: ## This help
 
 .PHONY: build-base 
 build-base: ## Build base jukebox image
-	@if [ "$(VIDEO_ENC)" = "gpu-nvidia" ]; then \
-		EXTRA_ARGS="\
-			--build-arg CUDA_VER_MAJOR=$(NVIDIA_CUDA_VER_MAJOR) \
-			--build-arg CUDA_VER_MINOR=$(NVIDIA_CUDA_VER_MINOR) \
-		"; \
-	else \
-		EXTRA_ARGS=""; \
-	fi; \
 	docker build \
 		-t $(DOCKER_BASE_IMAGE_TAG) \
 		--progress plain \

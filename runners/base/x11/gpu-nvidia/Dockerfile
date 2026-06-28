@@ -12,9 +12,6 @@ ARG WINDOW_SYSTEM
 # default log level: INFO
 ARG STREAMD_LOG_LEVEL=2
 
-ARG CUDA_VER_MAJOR
-ARG CUDA_VER_MINOR
-
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
@@ -32,12 +29,14 @@ RUN apt-get update \
         libxext-dev \
         libxtst-dev \
         libxfixes-dev \
+        linux-perf \
         pkg-config
 
 WORKDIR $SRC_DIR
 
 COPY files/patches ./patches
 
+# COPY deps/gstreamer gstreamer
 COPY files/build_gstreamer.sh .
 RUN ./build_gstreamer.sh ${BUILD_DIR} --${VIDEO_ENC}
 
@@ -54,38 +53,34 @@ FROM ${BASE_IMAGE} AS runner
 
 ARG BUILD_DIR
 ARG USERNAME
-# TODO: sync-up with an appstor hardcoded user IDs (search for 1000 in the yag-infra project)
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
-ARG USER_UBUNTU=ubuntu
-
-ARG CUDA_VER_MAJOR
-ARG CUDA_VER_MINOR
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# libnvidia-encode is requred by gstreamer pipeline at runtime
-# TODO: sync libnvidia-encode-560 with nvidia-smi version on the host
+RUN export OS_RELEASE_VER=$(. /etc/os-release && echo "$VERSION_CODENAME") \
+    && echo "deb http://deb.debian.org/debian/ $OS_RELEASE_VER contrib non-free non-free-firmware" \
+    > /etc/apt/sources.list.d/non-free.list
+
+# warning: firefox depends on intel-media-va-driver which replaces iHD driver and crashes the pipeline
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         xserver-xorg-video-dummy x11-xserver-utils \
         pulseaudio \
         openssl \
         openbox \
+        dbus-daemon \
         procps \
         xterm \
         libsrtp2-dev \
-        libnvidia-encode-560 \
         fluidsynth fluid-soundfont-gm \
-        #cuda-nvrtc-${CUDA_VER_MAJOR}-${CUDA_VER_MINOR} \
         # firefox \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # TODO: sync /run/user/$USER_UID with XDG_RUNTIME_DIR
-# in the nvidia base image UID 1000 is already occupied by ubuntu user, so just renaming it as id must be preserved for appstor mount needs
-RUN usermod -md /home/$USERNAME -l $USERNAME $USER_UBUNTU \
-    && groupmod -n $USERNAME $USER_UBUNTU \
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -s /bin/bash \
     && usermod -aG audio,video,pulse $USERNAME \
     && mkdir -p /run/user/$USER_UID \
     && chmod 0700 /run/user/$USER_UID \
@@ -120,9 +115,5 @@ COPY files/init.sh /etc/init.d/init.sh
 ENV USERNAME=$USERNAME
 ENV USER_UID=$USER_UID
 
-# without modified LD_LIBRARY_PATH, pipeline fails with: 
-# libcuda.so.1: cannot open shared object file: No such file or directory
-#ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-${CUDA_VER_MAJOR}.${CUDA_VER_MINOR}/compat
-#RUN ln -s /usr/local/cuda/lib64/libnvrtc.so.${CUDA_VER_MAJOR} /usr/local/cuda/lib64/libnvrtc.so
-
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
 ENTRYPOINT ["/etc/init.d/init.sh"]
