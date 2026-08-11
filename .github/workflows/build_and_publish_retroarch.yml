@@ -28,7 +28,7 @@ jobs:
           - gpu-intel
           - gpu-nvidia
         runner_ver:
-          - "1.21.0"
+          - "1.22.2"
     permissions:
       contents: read
       packages: write
