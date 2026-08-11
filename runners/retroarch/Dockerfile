@@ -32,6 +32,12 @@ RUN wget https://buildbot.libretro.com/stable/${RUNNER_VER}/linux/x86_64/RetroAr
 RUN wget "https://cdn.yag.im/runners/src/retroarch/Philips+-+CDi+(SAME+CDi).zip" \
     && unzip Philips+-+CDi+\(SAME+CDi\).zip -d ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system
 
+# Sega CD BIOSes origin: https://github.com/groenator/retroarch_system/tree/libretro/Sega%20-%20Mega%20CD%20-%20Sega%20CD
+RUN wget -P ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system \
+    "https://raw.githubusercontent.com/groenator/retroarch_system/libretro/Sega%20-%20Mega%20CD%20-%20Sega%20CD/bios_CD_E.bin" \
+    "https://raw.githubusercontent.com/groenator/retroarch_system/libretro/Sega%20-%20Mega%20CD%20-%20Sega%20CD/bios_CD_J.bin" \
+    "https://raw.githubusercontent.com/groenator/retroarch_system/libretro/Sega%20-%20Mega%20CD%20-%20Sega%20CD/bios_CD_U.bin"
+
 # docker doesn't support AppImage-s, so extracting binaries (into squashfs-root)
 WORKDIR ${BUILD_DIR}/RetroArch-Linux-x86_64
 RUN chmod +x RetroArch-Linux-x86_64.AppImage \
@@ -56,6 +62,8 @@ COPY files/retroarch.cfg /home/${USERNAME}/.config/retroarch/retroarch.cfg
 # Genesis Plus GX
 # disable auto game focus so keyboard-to-RetroPad mapping works (genesis_plus_gx doesn't handle raw keyboard input)
 COPY ["files/genesis_plus_gx/Genesis Plus GX.cfg", "/home/${USERNAME}/.config/retroarch/config/Genesis Plus GX/Genesis Plus GX.cfg"]
+# use 3-button MD pad (safer default; 6-button breaks some Sega CD games)
+COPY ["files/genesis_plus_gx/Genesis Plus GX.rmp", "/home/${USERNAME}/.config/retroarch/config/remaps/Genesis Plus GX/Genesis Plus GX.rmp"]
 
 # SAME_CDI
 # SAME_CDI.opt: "same_cdi_mouse_enable" enabled and "input_exit_emulator" set to "nul"
@@ -66,6 +74,7 @@ COPY files/same_cdi/default.cfg /home/${USERNAME}/.config/retroarch/saves/SAME_C
 
 RUN ln -s /opt/retroarch/AppRun /usr/bin/retroarch
 
-RUN chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.config/retroarch
+RUN mkdir -p /home/${USERNAME}/.config/retroarch/logs \
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.config/retroarch
 
 ENTRYPOINT ["/etc/init.d/init.sh"]
