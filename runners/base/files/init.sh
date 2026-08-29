@@ -74,3 +74,4 @@ EOF
 echo "finished execution, exiting and closing container"
 
 # su --preserve-environment "${USERNAME}" -c "/home/${USERNAME}/run_ws.sh"
+# trigger build # 1.0
