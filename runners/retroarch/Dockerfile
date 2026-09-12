@@ -51,6 +51,14 @@ RUN wget -O ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.
         "82a21c1890cae844b3df741f2762d48d  ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/kick34005.A500" \
         | md5sum --check
 
+# TRS-80 Color Computer (CoCo/CoCo 2/CoCo 3) system ROMs for the MAME core (must live under system/mame/roms per the core's rompath)
+RUN mkdir -p ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/mame/roms \
+    && wget -P ${BUILD_DIR}/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/mame/roms \
+    "https://colorcomputerarchive.com/repo/ROMs/MAME-MESS/coco.zip" \
+    "https://colorcomputerarchive.com/repo/ROMs/MAME-MESS/coco2b.zip" \
+    "https://colorcomputerarchive.com/repo/ROMs/MAME-MESS/coco3.zip" \
+    "https://colorcomputerarchive.com/repo/ROMs/MAME-MESS/coco_fdc.zip"
+
 # docker doesn't support AppImage-s, so extracting binaries (into squashfs-root)
 WORKDIR ${BUILD_DIR}/RetroArch-Linux-x86_64
 RUN chmod +x RetroArch-Linux-x86_64.AppImage \
