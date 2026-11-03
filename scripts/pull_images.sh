@@ -14,10 +14,12 @@ pull_docker_images() {
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_retroarch:${RETROARCH_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:${SCUMMVM_VER} \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:${WINE_VER} \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_qemu:latest \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_wine:10.0 \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:2.9.0 \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_scummvm:2.9.1 \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:2024.12.04 \
+        && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_dosbox-x:2025.12.01 \
         && docker pull $DOCKER_REPO/${WINDOW_SYSTEM}_${VIDEO_ENC}_retroarch:1.21.0 \
         && dangling=\$(docker images -f \"dangling=true\" -q) && [ -n \"\$dangling\" ] && docker rmi \$dangling || echo \"No dangling images to remove.\""
 }

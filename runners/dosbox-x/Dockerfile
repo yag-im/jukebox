@@ -25,8 +25,9 @@ WORKDIR ${SRC_DIR}
 
 RUN git clone --depth 1 --single-branch --branch dosbox-x-v${RUNNER_VER} https://github.com/joncampbell123/dosbox-x.git
 
+# --disable-debug resolves a bug "Shift+A is a new built-in hotkey that toggles mute on the AWE" introduced by ac3f80e14
 RUN cd ./dosbox-x \
-    && ./build-sdl2 \
+    && ./build-sdl2 --disable-debug \
     && make DESTDIR=${BUILD_DIR} install
 
 # dosbox-x runner
