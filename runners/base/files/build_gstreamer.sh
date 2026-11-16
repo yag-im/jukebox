@@ -14,6 +14,7 @@ fi
 # webrtc: required by gst-plugins-rs
 # tls/dtls: required by libnice:streamer
 # sctp: required by webrtc
+# debugutils: provides errorignore, required by webrtcsink codec discovery
 # pango: required for time/text overlays
 
 BUILD_BIN_PREFIX=$1
@@ -79,6 +80,7 @@ meson setup \
     -Dgst-plugins-good:ximagesrc-xfixes=enabled \
     -Dgst-plugins-good:ximagesrc-xshm=enabled \
     -Dbad=enabled \
+    -Dgst-plugins-bad:debugutils=enabled \
     -Dgst-plugins-bad:dtls=enabled \
     -Dgst-plugins-bad:sctp=enabled \
     -Dgst-plugins-bad:srtp=enabled \
