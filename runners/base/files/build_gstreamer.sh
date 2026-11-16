@@ -17,8 +17,10 @@ fi
 # pango: required for time/text overlays
 
 BUILD_BIN_PREFIX=$1
-GSTREAMER_VERSION=1.26.5
-GST_PLUGINS_RS_VERSION=add_send_webrtc_stats_20250813
+
+# follow README instructions from deps/gstreamer for building custom GStreamer and gst-plugins-rs
+GSTREAMER_VERSION=1.28.9
+GST_PLUGINS_RS_VERSION=add_send_webrtc_stats_1_28_9
 
 apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -53,6 +55,7 @@ meson setup \
     -Dauto_features=disabled \
     -Dgpl=enabled \
     -Dtools=enabled \
+    -Dgstreamer:check=enabled \
     -Dlibnice=enabled \
     -Dlibnice:gstreamer=enabled \
     -Dbase=enabled \

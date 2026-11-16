@@ -1,0 +1,48 @@
+--- a/src/ints/mouse.cpp
++++ b/src/ints/mouse.cpp
+@@ -677,6 +677,12 @@
+ 	mouse.in_UIR = false;
+ }
+ 
++/* Integer position pos carrying over the sub-pixel part of cur (positions are read truncated towards zero) */
++static float Mouse_KeepSubPixel(Bit16s pos, float cur) {
++	float frac = static_cast<float>(fabs(cur - static_cast<float>(static_cast<Bit16s>(cur))));
++	return (pos >= 0) ? static_cast<float>(pos) + frac : static_cast<float>(pos) - frac;
++}
++
+ static Bitu INT33_Handler(void) {
+ //	LOG(LOG_MOUSE,LOG_NORMAL)("MOUSE: %04X %X %X %d %d",reg_ax,reg_bx,reg_cx,POS_X,POS_Y);
+ 	switch (reg_ax) {
+@@ -709,13 +715,26 @@
+ 		/* If position isn't different from current position
+ 		 * don't change it then. (as position is rounded so numbers get
+ 		 * lost when the rounded number is set) (arena/simulation Wolf) */
+-		if ((Bit16s)reg_cx >= mouse.max_x) mouse.x = static_cast<float>(mouse.max_x);
+-		else if (mouse.min_x >= (Bit16s)reg_cx) mouse.x = static_cast<float>(mouse.min_x); 
+-		else if ((Bit16s)reg_cx != POS_X) mouse.x = static_cast<float>(reg_cx);
++		/* Generalized: a position less than one mickey step (on either axis) away is rounding as well.
++		 * Games with a coarse mickey ratio snap the pointer to their own grid on every event, e.g.
++		 * Strawberry Magic: ratio 1x2 (8/4 units per mickey) and grid 8, so one mickey down (+4) got
++		 * snapped back while one mickey up (-4) was floored a whole grid cell further.
++		 * With the default 8x16 ratio the step is 1, so only exact matches are ignored (as before). */
++		/* If it is different, keep the sub-pixel part as well. Otherwise games that read (03h)
++		 * and re-centre (04h) the pointer lose half-pixel moves in one direction only: with
++		 * the default 8x16 mickey/pixel ratio "up" moves twice as fast as "down". */
++		{
++			float step = (mouse.pixelPerMickey_x > mouse.pixelPerMickey_y) ? mouse.pixelPerMickey_x : mouse.pixelPerMickey_y;
++			if (step < 1.0f) step = 1.0f;
+ 
+-		if ((Bit16s)reg_dx >= mouse.max_y) mouse.y = static_cast<float>(mouse.max_y);
+-		else if (mouse.min_y >= (Bit16s)reg_dx) mouse.y = static_cast<float>(mouse.min_y); 
+-		else if ((Bit16s)reg_dx != POS_Y) mouse.y = static_cast<float>(reg_dx);
++			if ((Bit16s)reg_cx >= mouse.max_x) mouse.x = static_cast<float>(mouse.max_x);
++			else if (mouse.min_x >= (Bit16s)reg_cx) mouse.x = static_cast<float>(mouse.min_x); 
++			else if (fabs(static_cast<float>((Bit16s)reg_cx - POS_X)) >= step) mouse.x = Mouse_KeepSubPixel((Bit16s)reg_cx, mouse.x);
++
++			if ((Bit16s)reg_dx >= mouse.max_y) mouse.y = static_cast<float>(mouse.max_y);
++			else if (mouse.min_y >= (Bit16s)reg_dx) mouse.y = static_cast<float>(mouse.min_y); 
++			else if (fabs(static_cast<float>((Bit16s)reg_dx - POS_Y)) >= step) mouse.y = Mouse_KeepSubPixel((Bit16s)reg_dx, mouse.y);
++		}
+ 		DrawCursor();
+ 		break;
+ 	case 0x05:	/* Return Button Press Data */

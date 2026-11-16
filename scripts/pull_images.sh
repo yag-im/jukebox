@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Make sure legacy images which are still in use are part of the pull_docker_images() pull list.
+
 set -o allexport
     source ../envs/build.env
     source .env
@@ -43,7 +45,7 @@ pull_cloud_dev_all() {
 }
 
 pull_cloud_prod_all() {
-    HOST_IPS=("192.168.12.2" "192.168.13.2")
+    HOST_IPS=("192.168.12.2" "192.168.12.3" "192.168.13.2")
     for host_ip in "${HOST_IPS[@]}"; do
         ssh -i ${BASTION_SECRETS_DIR}/prod/id_ed25519 -o ProxyCommand="ssh -p 2207 -W %h:%p infra@bastion.yag.im" debian@$host_ip \
             "$(pull_docker_images)"
